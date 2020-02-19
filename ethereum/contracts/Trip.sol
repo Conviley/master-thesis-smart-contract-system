@@ -99,6 +99,18 @@ contract Trip {
         price = _price;
     }
     
+    function changeTrainId(string memory _trainID) public restricted {
+        trainID = _trainID;
+    }
+    
+    function changeLocationSignature(string memory _locationSignature) public restricted {
+        locationSignature = _locationSignature;
+    }
+    
+    function changeAdvertisedTimeAtLoctaion(string memory _advertisedTimeAtLocation) public restricted {
+        advertisedTimeAtLocation = _advertisedTimeAtLocation;
+    }
+    
     //function refund() public {}
     
     //function requestTimeAtLocation() public {}
