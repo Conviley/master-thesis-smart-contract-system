@@ -28,7 +28,7 @@ contract TripFactory {
                 "Nr")
             ));
     }
-
+    
     function createTrip(uint price, bool active, string memory trainID, string memory advertisedTimeAtLocation, string memory locationSignature) public restricted {
         trips.push(address(
             new Trip(
@@ -82,15 +82,27 @@ contract Trip {
         passengers[msg.sender] = price;
         passengerCount++;
     }
-
-    //function cancelTripBooking() public {}
-
+    
+    function cancelTripBooking() public {
+        uint amount = passengers[msg.sender];
+        require(amount > 0);
+        passengers[msg.sender] = 0;
+        passengerCount--;
+        msg.sender.transfer(amount);
+    }
+    
+    function getBalance() public view returns(uint) {
+        return address(this).balance;
+    }
+    
+    function changePrice(uint _price) public restricted {
+        price = _price;
+    }
+    
     //function refund() public {}
-
-    //function changePrice(uint price) public restricted {}
-
+    
     //function requestTimeAtLocation() public {}
-
+    
     //function fulfillTimeAtLocation() public {}
-
+    
 }
