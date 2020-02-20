@@ -5,20 +5,19 @@ const compiledTrip = require('../build/contracts/Trip.json')
 
 contract('TripFactory', async accounts => {
   let TripFactoryInstance
-  let tripContract
+
   beforeEach('setup contract for each test', async function() {
     TripFactoryInstance = await TripFactory.deployed()
   })
 
   it('Has valid manager', async () => {
-    res = await TripFactoryInstance.isManager(accounts[0])
+    res = await TripFactoryInstance.managers.call(accounts[0])
     assert(res)
   })
 
   it('Manager Can create a mock trip', async () => {
     await TripFactoryInstance.createMockTrip()
     let trips = await TripFactoryInstance.getTrips()
-    tripContract = await Trip.at(trips[0])
     assert.equal(trips.length, 1)
   })
 
@@ -39,14 +38,28 @@ contract('TripFactory', async accounts => {
 
   it('Add new manager', async () => {
     await TripFactoryInstance.addManager(accounts[1])
-    res = await TripFactoryInstance.isManager(accounts[1])
+    res = await TripFactoryInstance.managers.call(accounts[1])
     assert(res)
+  })
+})
+
+contract('Trip', async accounts => {
+  let tripContract
+  beforeEach('setup contract for each test', async function() {
+    TripFactoryInstance = await TripFactory.deployed()
+    await TripFactoryInstance.createMockTrip()
+    let trips = await TripFactoryInstance.getTrips()
+    tripContract = await Trip.at(trips[0])
   })
 
   it('Books trip', async () => {
     await tripContract.bookTrip({ from: accounts[0], value: 10000 })
     let balance = await tripContract.getBalance()
-    console.log(balance)
     assert.equal(balance.words[0], 10000)
+  })
+
+  it('Has manager', async () => {
+    res = await tripContract.managers.call(accounts[0])
+    assert(res)
   })
 })
