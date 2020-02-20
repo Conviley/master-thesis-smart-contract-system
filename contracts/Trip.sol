@@ -44,6 +44,10 @@ contract TripFactory {
     function getTrips() public view returns (address[] memory){
         return trips;
     }
+
+    function isManager(address managerAddress) public view returns (bool) {
+        return managers[managerAddress];
+    }
 }
 
 contract Trip {
