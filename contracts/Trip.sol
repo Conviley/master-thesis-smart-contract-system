@@ -67,10 +67,10 @@ contract Trip {
         managers[newManagerAddress] = true;
     }
 
-    constructor(address manager, uint _price, bool _active, string memory _trainID, string memory _advertisedTimeAtLocation, string memory _locationSignature) public {
+    constructor(address manager, uint _price, bool _isActive, string memory _trainID, string memory _advertisedTimeAtLocation, string memory _locationSignature) public {
         managers[manager] = true;
         price = _price;
-        isActive = _active;
+        isActive = _isActive;
         trainID = _trainID;
         advertisedTimeAtLocation = _advertisedTimeAtLocation;
         locationSignature = _locationSignature;
