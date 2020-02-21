@@ -1,8 +1,6 @@
 const TripFactory = artifacts.require('TripFactory')
 const Trip = artifacts.require('Trip')
 
-const compiledTrip = require('../build/contracts/Trip.json')
-
 contract('TripFactory', async accounts => {
   let TripFactoryInstance
 
