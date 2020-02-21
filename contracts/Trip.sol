@@ -29,12 +29,12 @@ contract TripFactory {
             ));
     }
 
-    function createTrip(uint price, bool active, string memory trainID, string memory advertisedTimeAtLocation, string memory locationSignature) public restricted {
+    function createTrip(uint price, bool isActive, string memory trainID, string memory advertisedTimeAtLocation, string memory locationSignature) public restricted {
         trips.push(address(
             new Trip(
                 msg.sender,
                 price,
-                active,
+                isActive,
                 trainID,
                 advertisedTimeAtLocation,
                 locationSignature)
@@ -55,8 +55,8 @@ contract Trip {
     string public advertisedTimeAtLocation;
     mapping(address=>uint) public passengers;
     mapping(address=>bool) public managers;
-    bool public reimbursable;
-    bool public active;
+    bool public isRefundable;
+    bool public isActive;
 
     modifier restricted() {
         require(managers[msg.sender]);
@@ -67,10 +67,10 @@ contract Trip {
         managers[newManagerAddress] = true;
     }
 
-    constructor(address manager, uint _price, bool _active, string memory _trainID, string memory _advertisedTimeAtLocation, string memory _locationSignature) public {
+    constructor(address manager, uint _price, bool _isActive, string memory _trainID, string memory _advertisedTimeAtLocation, string memory _locationSignature) public {
         managers[manager] = true;
         price = _price;
-        active = _active;
+        isActive = _isActive;
         trainID = _trainID;
         advertisedTimeAtLocation = _advertisedTimeAtLocation;
         locationSignature = _locationSignature;
