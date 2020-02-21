@@ -26,7 +26,10 @@ const mnemonic = fs
   .readFileSync('.secret')
   .toString()
   .trim()
-
+const infuraKey = fs
+  .readFileSync('.infura')
+  .toString()
+  .trim()
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -62,11 +65,7 @@ module.exports = {
     // Useful for deploying to a public network.
     // NB: It's important to wrap the provider as a function.
     ropsten: {
-      provider: () =>
-        new HDWalletProvider(
-          mnemonic,
-          `https://ropsten.infura.io/v3/36e70f3c9a564b0ab5e15d2705568704`
-        ),
+      provider: () => new HDWalletProvider(mnemonic, infuraKey),
       network_id: 3, // Ropsten's id
       gas: 5500000, // Ropsten has a lower block limit than mainnet
       confirmations: 2, // # of confs to wait between deployments. (default: 0)

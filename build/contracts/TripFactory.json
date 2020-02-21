@@ -23,8 +23,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -43,8 +42,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -110,8 +108,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     }
   ],
   "metadata": "{\"compiler\":{\"version\":\"0.6.2+commit.bacdbe57\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newManagerAddress\",\"type\":\"address\"}],\"name\":\"addManager\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"createMockTrip\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"active\",\"type\":\"bool\"},{\"internalType\":\"string\",\"name\":\"trainID\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"advertisedTimeAtLocation\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"locationSignature\",\"type\":\"string\"}],\"name\":\"createTrip\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTrips\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"managers\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"trips\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/Diddi/Documents/mjukvaruteknik/examensarbete/tqdt33/contracts/Trip.sol\":\"TripFactory\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Diddi/Documents/mjukvaruteknik/examensarbete/tqdt33/contracts/Trip.sol\":{\"keccak256\":\"0x5843b24637a54e977b02e66751350b06500b98f4bceae0032fd2ece11ab27934\",\"urls\":[\"bzz-raw://1add9721533d1f9953325f903c112e0c9759a63a9345d5e6d39fc852ff21e23d\",\"dweb:/ipfs/QmX8pk5GzEXxcbUU9GB6BRGxbWPMQN2jhzniHdUgviSMvM\"]}},\"version\":1}",
@@ -8142,8 +8139,7 @@
     }
   },
   "schemaVersion": "3.0.23",
-  "updatedAt": "2020-02-20T13:36:34.632Z",
-  "networkType": "ethereum",
+  "updatedAt": "2020-02-21T10:42:54.236Z",
   "devdoc": {
     "methods": {}
   },
