@@ -1,5 +1,7 @@
 pragma solidity ^0.6.2;
 
+import "chainlink/v0.6/contracts/ChainlinkClient.sol";
+
 contract TripFactory {
     address[] public trips;
     mapping(address=>bool) public managers;
@@ -25,11 +27,12 @@ contract TripFactory {
                 true,
                 "545",
                 "2020-02-18",
-                "Nr")
+                "Nr",
+                0xc99B3D447826532722E41bc36e644ba3479E4365)
             ));
     }
 
-    function createTrip(uint price, bool isActive, string memory trainID, string memory advertisedTimeAtLocation, string memory locationSignature) public restricted {
+    function createTrip(uint price, bool isActive, string memory trainID, string memory advertisedTimeAtLocation, string memory locationSignature, address oracle) public restricted {
         trips.push(address(
             new Trip(
                 msg.sender,
@@ -37,7 +40,8 @@ contract TripFactory {
                 isActive,
                 trainID,
                 advertisedTimeAtLocation,
-                locationSignature)
+                locationSignature,
+                oracle)
             ));
     }
 
@@ -46,7 +50,7 @@ contract TripFactory {
     }
 }
 
-contract Trip {
+contract Trip is ChainlinkClient {
     uint public passengerCount;
     uint public paybackRatio;
     uint public price;
@@ -129,7 +133,7 @@ contract Trip {
     //function refund() public {}
 
     function requestTimeAtLocation() public restricted {
-        Chainlink.Request memory req = buildChainlinkRequest(JOB_ID_GET_PATH, this, this.fulfillTimeAtLocation.selector);
+        Chainlink.Request memory req = buildChainlinkRequest(JOB_ID_GET_PATH, address(this), this.fulfillTimeAtLocation.selector);
         req.add("get", "https://pastebin.com/raw/MNvNvVQ3"); //This is a test-url. It should be exchanged with 'https://api.trafikinfo.trafikverket.se/v2/data.json'.
         req.add("path", "RESPONSE.RESULT.0.TrainAnnouncement.0.TimeAtLocation");
         sendChainlinkRequest(req, ORACLE_PAYMENT);
