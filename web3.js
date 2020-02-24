@@ -1,6 +1,5 @@
 import Web3 from 'web3'
 import address from './address.json'
-
 import infura from './infura.json'
 
 let web3
