@@ -26,10 +26,12 @@ const mnemonic = fs
   .readFileSync('.secret')
   .toString()
   .trim()
-const infuraEndpoint = fs
-  .readFileSync('.infura')
+const infuraEndpointRaw = fs
+  .readFileSync('infura.json')
   .toString()
   .trim()
+const infuraEndpoint = JSON.parse(infuraEndpointRaw).endpoint
+
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the

@@ -4,5 +4,5 @@ package-lock.json
 .secret
 .address
 address.json
-.infura
+infura.json
 build
