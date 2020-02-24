@@ -4,7 +4,7 @@ import { Link } from '../routes'
 
 export default () => {
   return (
-    <Menu style={{ marginTop: '10px' }}>
+    <Menu>
       <Link route="/">
         <a className="item">De-Rail</a>
       </Link>
