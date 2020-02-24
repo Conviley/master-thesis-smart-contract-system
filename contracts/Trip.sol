@@ -183,6 +183,7 @@ contract Trip is ChainlinkClient {
         timeAtLocation = _time;
     }
 
+    // This function is not in use.
     function getChainlinkToken() public view returns (address) {
         return chainlinkTokenAddress();
     }
