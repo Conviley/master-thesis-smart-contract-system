@@ -6,7 +6,7 @@ import Header from './Header'
 export default props => {
   return (
     <Grid>
-      <Grid.Row>
+      <Grid.Row style={{ backgroundColor: '#f4f4ee' }}>
         <Grid.Column className="centered">
           <div className="top-header-bar">
             <Container>
@@ -15,13 +15,13 @@ export default props => {
           </div>
         </Grid.Column>
       </Grid.Row>
+
       <Grid.Row
-        style={{
-          height: 960,
+      /*style={{
+          display: 'inline-block',
           backgroundImage: `url(${'/winter.jpg'})`,
           backgroundSize: 'cover',
-          marginTop: -15,
-        }}
+        }}*/
       >
         <Grid.Column>
           <Container>
