@@ -20,9 +20,9 @@ To get up and running perform the following steps:
 10. Run `truffle migrate --network ropsten` 
 11. Create a file called `address.json` with a json object with the key `address` pointing to the trip factory
     ```json
-        {
+    {
         "address": "Contract address from the latest migration"
-        }
+    }
     ```
 12. `cd client`
 13. finally run `npm run dev` to spin up the server and visit http://localhost:3000/
