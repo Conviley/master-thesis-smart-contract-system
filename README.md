@@ -4,7 +4,7 @@ To get up and running perform the following steps:
 2. `cd tqdt33` You should be on the development branch already!
 3. Run `npm install`
 4. Create Infura account att www.infura.io and set up a new project.
-5. `cd ../client`
+5. `cd client`
 6. Run `npm install`
 7. `cd ../`
 8. Create a file called `infura.json` with a json object with key `endpoint`
