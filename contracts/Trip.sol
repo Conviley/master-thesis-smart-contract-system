@@ -8,6 +8,8 @@ contract TripFactory {
     address[] public trips;
     mapping(address => bool) public managers;
 
+    address constant CHAINLINK_ORACLE_ROPSTEN = 0xc99B3D447826532722E41bc36e644ba3479E4365;
+
     modifier restricted() {
         require(managers[msg.sender]);
         _;
@@ -31,7 +33,7 @@ contract TripFactory {
                     "545",
                     "2020-02-18",
                     "Nr",
-                    0xc99B3D447826532722E41bc36e644ba3479E4365
+                    CHAINLINK_ORACLE_ROPSTEN
                 )
             )
         );
@@ -83,6 +85,9 @@ contract Trip is ChainlinkClient {
     bytes32 constant JOB_ID_POST_PATH = bytes32(
         "897479ba429445e4a89be90cfcd52a51"
     );
+    bytes32 constant JOB_ID_ALARM_CLOCK = bytes32(
+        "2ebb1c1a4b1e4229adac24ee0b5f784f"
+    );
     uint256 private constant ORACLE_PAYMENT = 1 * LINK;
 
     bytes32 public timeAtLocation;
@@ -91,6 +96,8 @@ contract Trip is ChainlinkClient {
         require(managers[msg.sender]);
         _;
     }
+
+    event RequestAlarmClock(bytes32 indexed requestId);
 
     event RequestTimeAtLocation(
         bytes32 indexed requestId,
@@ -121,6 +128,7 @@ contract Trip is ChainlinkClient {
         setPublicChainlinkToken();
 
         setChainlinkOracle(_oracle);
+
     }
 
     function bookTrip() public payable {
@@ -156,7 +164,7 @@ contract Trip is ChainlinkClient {
         locationSignature = _locationSignature;
     }
 
-    function changeAdvertisedTimeAtLoctaion(
+    function changeAdvertisedTimeAtLocation(
         string memory _advertisedTimeAtLocation
     ) public restricted {
         advertisedTimeAtLocation = _advertisedTimeAtLocation;
@@ -164,7 +172,26 @@ contract Trip is ChainlinkClient {
 
     //function refund() public {}
 
-    function requestTimeAtLocation() public restricted {
+    // param _requestTime must be specified in the format of a UNIX timestamp
+    function requestAlarmClock(uint256 _requestTime) public restricted {
+        Chainlink.Request memory req = buildChainlinkRequest(
+            JOB_ID_ALARM_CLOCK,
+            address(this),
+            this.fulfillAlarmClock.selector
+        );
+        req.addUint("until", _requestTime);
+        sendChainlinkRequest(req, ORACLE_PAYMENT);
+    }
+
+    function fulfillAlarmClock(bytes32 _requestId)
+        public
+        recordChainlinkFulfillment(_requestId)
+    {
+        emit RequestAlarmClock(_requestId);
+        requestTimeAtLocation();
+    }
+
+    function requestTimeAtLocation() private {
         Chainlink.Request memory req = buildChainlinkRequest(
             JOB_ID_GET_PATH,
             address(this),
@@ -183,7 +210,6 @@ contract Trip is ChainlinkClient {
         timeAtLocation = _time;
     }
 
-    // This function is not in use.
     function getChainlinkToken() public view returns (address) {
         return chainlinkTokenAddress();
     }
