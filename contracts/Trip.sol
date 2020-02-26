@@ -2,9 +2,9 @@ pragma solidity ^0.5.1;
 
 import "./HitchensUnorderedKeySet.sol";
 
-import "chainlink/v0.5/contracts/ChainlinkClient.sol"; // Comment out this line when testing in remix
+//import "chainlink/v0.6/contracts/ChainlinkClient.sol"; // Comment out this line when testing in remix
 
-//import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.5/ChainlinkClient.sol"; // Uncomment this line when testing in remix
+import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.5/ChainlinkClient.sol"; // Uncomment this line when testing in remix
 
 contract DeRail is ChainlinkClient{
     using HitchensUnorderedKeySetLib for HitchensUnorderedKeySetLib.Set;
