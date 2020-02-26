@@ -1,27 +1,26 @@
-const TripFactory = artifacts.require('TripFactory')
-const Trip = artifacts.require('Trip')
+const DeRail = artifacts.require('DeRail')
 
-contract('TripFactory', async accounts => {
-  let TripFactoryInstance
+contract('DeRail', async accounts => {
+  let DeRailInstance
 
   beforeEach('setup contract for each test', async function() {
-    TripFactoryInstance = await TripFactory.deployed()
+    DeRailInstance = await DeRail.deployed()
   })
 
   it('Has valid manager', async () => {
-    res = await TripFactoryInstance.managers.call(accounts[0])
+    res = await DeRailInstance.managers.call(accounts[0])
     assert(res)
   })
 
   it('Manager can create a mock trip', async () => {
-    await TripFactoryInstance.createMockTrip()
-    let trips = await TripFactoryInstance.getTrips()
+    await DeRailInstance.createMockTrip()
+    let trips = await DeRailInstance.getTrips()
     assert.equal(trips.length, 1)
   })
 
   it('Non-manager cant create a mock trip', async () => {
     try {
-      await TripFactoryInstance.createMockTrip({ from: accounts[1] })
+      await DeRailInstance.createMockTrip({ from: accounts[1] })
       assert(false)
     } catch (err) {
       assert(err)
@@ -29,14 +28,14 @@ contract('TripFactory', async accounts => {
   })
 
   it('Manager can create custom trip', async () => {
-    await TripFactoryInstance.createTrip(10000, true, '545', '2020-02-20', 'Lp')
-    let trips = await TripFactoryInstance.getTrips()
+    await DeRailInstance.createTrip(10000, true, '545', '2020-02-20', 'Lp')
+    let trips = await DeRailInstance.getTrips()
     assert.equal(trips.length, 2)
   })
 
   it('Add new manager', async () => {
-    await TripFactoryInstance.addManager(accounts[1])
-    res = await TripFactoryInstance.managers.call(accounts[1])
+    await DeRailInstance.addManager(accounts[1])
+    res = await DeRailInstance.managers.call(accounts[1])
     assert(res)
   })
 })
@@ -44,9 +43,9 @@ contract('TripFactory', async accounts => {
 contract('Trip', async accounts => {
   let tripContract
   beforeEach('setup contract for each test', async function() {
-    TripFactoryInstance = await TripFactory.deployed()
-    await TripFactoryInstance.createMockTrip()
-    let trips = await TripFactoryInstance.getTrips()
+    DeRailInstance = await DeRail.deployed()
+    await DeRailInstance.createMockTrip()
+    let trips = await DeRailInstance.getTrips()
     tripContract = await Trip.at(trips[0])
   })
 
