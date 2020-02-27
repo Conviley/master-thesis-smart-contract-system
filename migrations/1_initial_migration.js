@@ -1,5 +1,5 @@
-const Migrations = artifacts.require("Migrations");
+const DeRail = artifacts.require('DeRail')
 
 module.exports = function(deployer) {
-  deployer.deploy(Migrations);
-};
+  deployer.deploy(DeRail)
+}
