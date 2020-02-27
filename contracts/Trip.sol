@@ -1,14 +1,12 @@
-pragma solidity ^0.6.2;
+pragma solidity ^0.5.1;
 
-import "chainlink/v0.6/contracts/ChainlinkClient.sol"; // Comment out this line when testing in remix
+import "../node_modules/chainlink/v0.5/contracts/ChainlinkClient.sol"; // Comment out this line when testing in remix
 
-// import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.6/ChainlinkClient.sol"; // Uncomment this line when testing in remix
+// import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.5/ChainlinkClient.sol"; // Uncomment this line when testing in remix
 
 contract TripFactory {
     address[] public trips;
     mapping(address => bool) public managers;
-
-    address constant CHAINLINK_ORACLE_ROPSTEN = 0xc99B3D447826532722E41bc36e644ba3479E4365;
 
     modifier restricted() {
         require(managers[msg.sender]);
@@ -30,10 +28,9 @@ contract TripFactory {
                     msg.sender,
                     10000,
                     true,
-                    "545",
-                    "2020-02-18",
-                    "Nr",
-                    CHAINLINK_ORACLE_ROPSTEN
+                    "535",
+                    "2020-02-25T16:25:00.000+01:00",
+                    "av"
                 )
             )
         );
@@ -44,8 +41,7 @@ contract TripFactory {
         bool isActive,
         string memory trainID,
         string memory advertisedTimeAtLocation,
-        string memory locationSignature,
-        address oracle
+        string memory locationSignature
     ) public restricted {
         trips.push(
             address(
@@ -55,8 +51,7 @@ contract TripFactory {
                     isActive,
                     trainID,
                     advertisedTimeAtLocation,
-                    locationSignature,
-                    oracle
+                    locationSignature
                 )
             )
         );
@@ -79,16 +74,25 @@ contract Trip is ChainlinkClient {
     bool public isRefundable;
     bool public isActive;
 
-    bytes32 constant JOB_ID_GET_PATH = bytes32(
-        "76ca51361e4e444f8a9b18ae350a5725"
-    ); //same as using stringToBytes32("76ca51361e4e444f8a9b18ae350a5725")
-    bytes32 constant JOB_ID_POST_PATH = bytes32(
-        "897479ba429445e4a89be90cfcd52a51"
-    );
-    bytes32 constant JOB_ID_ALARM_CLOCK = bytes32(
+    // ROP = Ropsten network, CL = Chainlink node, DH = Daniel's node
+    address private constant ROP_CL_ADDR_ORACLE = 0xc99B3D447826532722E41bc36e644ba3479E4365;
+    address private constant ROP_DH_ADDR_ORACLE = 0x7b64ED98259D2A7C520aAAa92D55D3887A2A2d9c;
+
+    bytes32 private constant ROP_CL_JOB_ID_ALARM_CLOCK = bytes32(
         "2ebb1c1a4b1e4229adac24ee0b5f784f"
     );
+    bytes32 private constant ROP_CL_JOB_ID_GET_PATH = bytes32(
+        "76ca51361e4e444f8a9b18ae350a5725"
+    );
+    bytes32 private constant ROP_DH_JOB_ID_GET_PATH = bytes32(
+        "747ae93e99b84840889e53920c5cecdb"
+    );
+    bytes32 private constant ROP_DH_JOB_ID_GET_TAL = bytes32(
+        "ac6bc509972b43f1ae85c738559384bd"
+    );
+
     uint256 private constant ORACLE_PAYMENT = 1 * LINK;
+    string constant JSON_PARSE_PATH = "RESPONSE.RESULT.0.TrainAnnouncement.0.TimeAtLocation";
 
     bytes32 public timeAtLocation;
 
@@ -114,8 +118,7 @@ contract Trip is ChainlinkClient {
         bool _isActive,
         string memory _trainID,
         string memory _advertisedTimeAtLocation,
-        string memory _locationSignature,
-        address _oracle
+        string memory _locationSignature
     ) public {
         managers[manager] = true;
         price = _price;
@@ -126,8 +129,6 @@ contract Trip is ChainlinkClient {
         passengerCount = 0;
 
         setPublicChainlinkToken();
-
-        setChainlinkOracle(_oracle);
 
     }
 
@@ -175,12 +176,12 @@ contract Trip is ChainlinkClient {
     // param _requestTime must be specified in the format of a UNIX timestamp
     function requestAlarmClock(uint256 _requestTime) public restricted {
         Chainlink.Request memory req = buildChainlinkRequest(
-            JOB_ID_ALARM_CLOCK,
+            ROP_CL_JOB_ID_ALARM_CLOCK,
             address(this),
             this.fulfillAlarmClock.selector
         );
         req.addUint("until", _requestTime);
-        sendChainlinkRequest(req, ORACLE_PAYMENT);
+        sendChainlinkRequestTo(ROP_CL_ADDR_ORACLE, req, ORACLE_PAYMENT);
     }
 
     function fulfillAlarmClock(bytes32 _requestId)
@@ -193,13 +194,15 @@ contract Trip is ChainlinkClient {
 
     function requestTimeAtLocation() private {
         Chainlink.Request memory req = buildChainlinkRequest(
-            JOB_ID_GET_PATH,
+            ROP_DH_JOB_ID_GET_TAL,
             address(this),
             this.fulfillTimeAtLocation.selector
         );
-        req.add("get", "https://pastebin.com/raw/MNvNvVQ3"); //This is a test-url. It should be exchanged with 'https://api.trafikinfo.trafikverket.se/v2/data.json'.
-        req.add("path", "RESPONSE.RESULT.0.TrainAnnouncement.0.TimeAtLocation");
-        sendChainlinkRequest(req, ORACLE_PAYMENT);
+        req.add("advertisedTrainIdent", trainID);
+        req.add("locationSignature", locationSignature);
+        req.add("advertisedTimeAtLocation", advertisedTimeAtLocation);
+        req.add("path", JSON_PARSE_PATH);
+        sendChainlinkRequestTo(ROP_DH_ADDR_ORACLE, req, ORACLE_PAYMENT);
     }
 
     function fulfillTimeAtLocation(bytes32 _requestId, bytes32 _time)

@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "chainlink": "^0.8.2",
+    "solc": "^0.5.1",
     "truffle-hdwallet-provider": "^1.0.17"
   },
   "devDependencies": {},
