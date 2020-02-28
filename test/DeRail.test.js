@@ -14,8 +14,8 @@ contract('DeRail', async accounts => {
 
   it('Manager can create a mock trip', async () => {
     await DeRailInstance.createMockTrip()
-    let trips = await DeRailInstance.getTrips()
-    assert.equal(trips.length, 1)
+    let tripCount = await DeRailInstance.getTripCount()
+    assert.equal(tripCount, 1)
   })
 
   it('Non-manager cant create a mock trip', async () => {
@@ -28,9 +28,19 @@ contract('DeRail', async accounts => {
   })
 
   it('Manager can create custom trip', async () => {
-    await DeRailInstance.createTrip(10000, true, '545', '2020-02-20', 'Lp')
-    let trips = await DeRailInstance.getTrips()
-    assert.equal(trips.length, 2)
+    await DeRailInstance.createTrip(
+      0,
+      0,
+      10000,
+      '545',
+      'Nr',
+      '2020-02-20',
+      web3.utils.fromAscii(0),
+      false,
+      true
+    )
+    let tripCount = await DeRailInstance.getTripCount()
+    assert.equal(tripCount, 2)
   })
 
   it('Add new manager', async () => {
@@ -38,25 +48,14 @@ contract('DeRail', async accounts => {
     res = await DeRailInstance.managers.call(accounts[1])
     assert(res)
   })
-})
-
-contract('Trip', async accounts => {
-  let tripContract
-  beforeEach('setup contract for each test', async function() {
-    DeRailInstance = await DeRail.deployed()
-    await DeRailInstance.createMockTrip()
-    let trips = await DeRailInstance.getTrips()
-    tripContract = await Trip.at(trips[0])
-  })
 
   it('User can book trip', async () => {
-    await tripContract.bookTrip({ from: accounts[0], value: 10000 })
-    let balance = await tripContract.getBalance()
-    assert.equal(balance.words[0], 10000)
-  })
-
-  it('Trip contract has a manager', async () => {
-    res = await tripContract.managers.call(accounts[0])
-    assert(res)
+    await DeRailInstance.createMockTrip()
+    await DeRailInstance.bookTrip(0, {
+      from: accounts[0],
+      value: web3.utils.toWei('1'),
+    })
+    let trip = await DeRailInstance.trips.call(0)
+    assert.equal(trip.passengerCount, 1)
   })
 })

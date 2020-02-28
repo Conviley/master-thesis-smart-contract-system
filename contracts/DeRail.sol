@@ -88,7 +88,7 @@ contract DeRail is ChainlinkClient{
         managers[newManagerAddress] = true;
     }
 
-    function createMockTripHitch() external restricted{
+    function createMockTrip() external restricted{
         uint key = getTripCount();
         Trip memory newTrip = Trip({
             tripID: key,
@@ -106,6 +106,49 @@ contract DeRail is ChainlinkClient{
         trips[key] = newTrip;
 
         emit LogNewTrip(msg.sender, key, key, 0, 0, 10000, "545", "Nr", "2020-02-18", 0x0, false, true);
+    }
+
+    function createTrip(
+        uint _passengerCount,
+        uint _paybackRatio,
+        uint _price,
+        string memory _trainID,
+        string memory _locationSignature,
+        string memory _advertisedTimeAtLocation,
+        bytes32 _timeAtLocation,
+        bool _isRefundable,
+        bool _isActive
+    ) public {
+        uint key = getTripCount();
+        Trip memory newTrip = Trip({
+            tripID: key,
+            passengerCount: _passengerCount,
+            paybackRatio: _paybackRatio,
+            price: _price,
+            trainID: _trainID,
+            locationSignature: _locationSignature,
+            advertisedTimeAtLocation: _advertisedTimeAtLocation,
+            timeAtLocation: _timeAtLocation,
+            isRefundable: _isRefundable,
+            isActive: _isActive
+        });
+        tripSet.insert(key);
+        trips[key] = newTrip;
+
+        emit LogNewTrip(
+            msg.sender,
+            key,
+            key,
+            _passengerCount,
+            _paybackRatio,
+            _price,
+            _trainID,
+            _locationSignature,
+            _advertisedTimeAtLocation,
+            _timeAtLocation,
+            _isRefundable,
+            _isActive
+        );
     }
 
     function remTrip(uint key) external restricted {
