@@ -81,7 +81,7 @@ contract DeRail is ChainlinkClient{
 
     constructor() public {
         managers[msg.sender] = true;
-        setPublicChainlinkToken();
+        //setPublicChainlinkToken();
     }
 
     function addManager(address newManagerAddress) external restricted {
