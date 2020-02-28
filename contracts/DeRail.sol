@@ -28,7 +28,7 @@ contract DeRail is ChainlinkClient{
     }
 
     modifier requireTrip(uint key) {
-        require(tripSet.exists(key), "Can't get a widget that doesn't exist.");
+        require(tripSet.exists(key), "Can't get a trip that doesn't exist.");
         _;
     }
 
@@ -81,14 +81,14 @@ contract DeRail is ChainlinkClient{
 
     constructor() public {
         managers[msg.sender] = true;
-        setPublicChainlinkToken();
+        setPublicChainlinkToken(); //TODO integrate chainlink tests(This line breaks local test right now)
     }
 
     function addManager(address newManagerAddress) external restricted {
         managers[newManagerAddress] = true;
     }
 
-    function createMockTripHitch() external restricted{
+    function createMockTrip() external restricted{
         uint key = getTripCount();
         Trip memory newTrip = Trip({
             tripID: key,
@@ -108,7 +108,50 @@ contract DeRail is ChainlinkClient{
         emit LogNewTrip(msg.sender, key, key, 0, 0, 10000, "545", "Nr", "2020-02-18", 0x0, false, true);
     }
 
-    function remTrip(uint key) external restricted {
+    function createTrip(
+        uint _passengerCount,
+        uint _paybackRatio,
+        uint _price,
+        string memory _trainID,
+        string memory _locationSignature,
+        string memory _advertisedTimeAtLocation,
+        bytes32 _timeAtLocation,
+        bool _isRefundable,
+        bool _isActive
+    ) public {
+        uint key = getTripCount();
+        Trip memory newTrip = Trip({
+            tripID: key,
+            passengerCount: _passengerCount,
+            paybackRatio: _paybackRatio,
+            price: _price,
+            trainID: _trainID,
+            locationSignature: _locationSignature,
+            advertisedTimeAtLocation: _advertisedTimeAtLocation,
+            timeAtLocation: _timeAtLocation,
+            isRefundable: _isRefundable,
+            isActive: _isActive
+        });
+        tripSet.insert(key);
+        trips[key] = newTrip;
+
+        emit LogNewTrip(
+            msg.sender,
+            key,
+            key,
+            _passengerCount,
+            _paybackRatio,
+            _price,
+            _trainID,
+            _locationSignature,
+            _advertisedTimeAtLocation,
+            _timeAtLocation,
+            _isRefundable,
+            _isActive
+        );
+    }
+
+    function remTrip(uint key) external restricted requireTrip(key){
         // TODO return money to passengers if trip is active
         tripSet.remove(key); // Note that this will fail automatically if the key doesn't exist
         delete trips[key];
@@ -133,7 +176,7 @@ contract DeRail is ChainlinkClient{
         emit LogNewTripPassenger(msg.sender, key, trip.price);
     }
 
-    function cancelBooking(uint key) external {
+    function cancelBooking(uint key) external requireTrip(key){
         Trip storage trip = trips[key];
         require(trip.passengers[msg.sender] > 0, "User is not a passenger of this trip!");
         trip.passengers[msg.sender] = 0;
