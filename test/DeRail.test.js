@@ -58,4 +58,28 @@ contract('DeRail', async accounts => {
     let trip = await DeRailInstance.trips.call(0)
     assert.equal(trip.passengerCount, 1)
   })
+
+  it('Remove a trip', async () => {
+    await DeRailInstance.remTrip(0)
+    let trip = await DeRailInstance.trips.call(1)
+    let tripCount = DeRailInstance.getTripCount()
+    assert(tripCount, 1)
+  })
+
+  it('Update trip price', async () => {
+    await DeRailInstance.updateTripPrice(1, web3.utils.toWei('2'))
+    let trip = await DeRailInstance.trips.call(1)
+    assert.equal(trip.price, web3.utils.toWei('2'))
+  })
+
+  it('Cancel booking', async () => {
+    let balancePrior = await web3.eth.getBalance(accounts[1])
+    await DeRailInstance.bookTrip(1, {
+      from: accounts[1],
+      value: web3.utils.toWei('2'),
+    })
+    await DeRailInstance.cancelBooking(1, { from: accounts[1] })
+    let balanceAfter = await web3.eth.getBalance(accounts[1])
+    assert(balancePrior - balanceAfter < web3.utils.toWei('2'))
+  })
 })
