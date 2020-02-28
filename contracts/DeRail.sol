@@ -81,7 +81,7 @@ contract DeRail is ChainlinkClient{
 
     constructor() public {
         managers[msg.sender] = true;
-        //setPublicChainlinkToken();
+        //setPublicChainlinkToken(); TODO integrate chainlink tests(This line breaks local test right now)
     }
 
     function addManager(address newManagerAddress) external restricted {
