@@ -1,7 +1,7 @@
 pragma solidity ^0.5.1;
 
 import "./HitchensUnorderedKeySet.sol";
-import "../node_modules/chainlink/v0.5/contracts/ChainlinkClient.sol"; // Comment out this line when testing in remix
+import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol"; // Comment out this line when testing in remix
 // import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.5/ChainlinkClient.sol"; // Uncomment this line when testing in remix
 
 contract DeRail is ChainlinkClient{
@@ -79,9 +79,13 @@ contract DeRail is ChainlinkClient{
         bytes32 indexed time
     );
 
-    constructor() public {
+    constructor(address _link) public {
         managers[msg.sender] = true;
-        setPublicChainlinkToken(); //TODO integrate chainlink tests(This line breaks local test right now)
+        if (_link == address(0)) {
+            setPublicChainlinkToken();
+        } else {
+            setChainlinkToken(_link);
+    }
     }
 
     function addManager(address newManagerAddress) external restricted {
