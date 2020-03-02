@@ -1,85 +1,116 @@
-const DeRail = artifacts.require('DeRail')
+const { oracle } = require('@chainlink/test-helpers')
+const { expectRevert, time } = require('openzeppelin-test-helpers')
 
 contract('DeRail', async accounts => {
+  const { LinkToken } = require('@chainlink/contracts/truffle/v0.4/LinkToken')
+  const { Oracle } = require('@chainlink/contracts/truffle/v0.5/Oracle')
+  const DeRail = artifacts.require('DeRail')
+
+  const defaultAccount = accounts[0]
+  const oracleNode = accounts[1]
+  const stranger = accounts[2]
+  const consumer = accounts[3]
+
   let DeRailInstance
-
+  let link, oc, cc
   beforeEach('setup contract for each test', async function() {
-    DeRailInstance = await DeRail.deployed()
-  })
-
-  it('Has valid manager', async () => {
-    res = await DeRailInstance.managers.call(accounts[0])
-    assert(res)
-  })
-
-  it('Manager can create a mock trip', async () => {
-    await DeRailInstance.createMockTrip()
-    let tripCount = await DeRailInstance.getTripCount()
-    assert.equal(tripCount, 1)
-  })
-
-  it('Non-manager cant create a mock trip', async () => {
-    try {
-      await DeRailInstance.createMockTrip({ from: accounts[1] })
-      assert(false)
-    } catch (err) {
-      assert(err)
-    }
-  })
-
-  it('Manager can create custom trip', async () => {
-    await DeRailInstance.createTrip(
-      0,
-      0,
-      10000,
-      '545',
-      'Nr',
-      '2020-02-20',
-      web3.utils.fromAscii(0),
-      false,
-      true
-    )
-    let tripCount = await DeRailInstance.getTripCount()
-    assert.equal(tripCount, 2)
-  })
-
-  it('Add new manager', async () => {
-    await DeRailInstance.addManager(accounts[1])
-    res = await DeRailInstance.managers.call(accounts[1])
-    assert(res)
-  })
-
-  it('User can book trip', async () => {
-    await DeRailInstance.createMockTrip()
-    await DeRailInstance.bookTrip(1, {
-      from: accounts[0],
-      value: web3.utils.toWei('1'),
+    link = await LinkToken.new({ from: defaultAccount })
+    oc = await Oracle.new(link.address, { from: defaultAccount })
+    DeRailInstance = await DeRail.new(link.address, { from: defaultAccount })
+    await oc.setFulfillmentPermission(oracleNode, true, {
+      from: defaultAccount,
     })
-    let trip = await DeRailInstance.trips.call(1)
-    assert.equal(trip.passengerCount, 1)
   })
 
-  it('Remove a trip', async () => {
-    await DeRailInstance.remTrip(1)
-    let trip = await DeRailInstance.trips.call(1)
-    let tripCount = DeRailInstance.getTripCount()
-    assert(tripCount, 1)
-  })
-
-  it('Update trip price', async () => {
-    await DeRailInstance.updateTripPrice(2, web3.utils.toWei('2'))
-    let trip = await DeRailInstance.trips.call(2)
-    assert.equal(trip.price, web3.utils.toWei('2'))
-  })
-
-  it('Cancel booking', async () => {
-    let balancePrior = await web3.eth.getBalance(accounts[1])
-    await DeRailInstance.bookTrip(2, {
-      from: accounts[1],
-      value: web3.utils.toWei('2'),
+  describe('#Non Chainlink Related tests', () => {
+    it('Has valid manager', async () => {
+      res = await DeRailInstance.managers.call(defaultAccount)
+      assert(res)
     })
-    await DeRailInstance.cancelBooking(2, { from: accounts[1] })
-    let balanceAfter = await web3.eth.getBalance(accounts[1])
-    assert(balancePrior - balanceAfter < web3.utils.toWei('2'))
+
+    it('Manager can create a mock trip', async () => {
+      await DeRailInstance.createMockTrip({ from: defaultAccount })
+      let tripCount = await DeRailInstance.getTripCount()
+      assert.equal(tripCount, 1)
+    })
+
+    it('Non-manager cant create a mock trip', async () => {
+      try {
+        await DeRailInstance.createMockTrip({ from: accounts[1] })
+        assert(false)
+      } catch (err) {
+        assert(err)
+      }
+    })
+
+    it('Manager can create custom trip', async () => {
+      await DeRailInstance.createTrip(
+        0,
+        0,
+        10000,
+        '545',
+        'Nr',
+        '2020-02-20',
+        web3.utils.fromAscii(0),
+        false,
+        true,
+        { from: defaultAccount }
+      )
+      let tripCount = await DeRailInstance.getTripCount()
+      assert.equal(tripCount, 1)
+    })
+
+    it('Add new manager', async () => {
+      await DeRailInstance.addManager(accounts[1])
+      res = await DeRailInstance.managers.call(accounts[1])
+      assert(res)
+    })
+
+    it('User can book trip', async () => {
+      await DeRailInstance.createMockTrip()
+      await DeRailInstance.bookTrip(1, {
+        from: accounts[0],
+        value: web3.utils.toWei('1'),
+      })
+      let trip = await DeRailInstance.trips.call(1)
+      assert.equal(trip.passengerCount, 1)
+    })
+
+    it('Remove a trip', async () => {
+      await DeRailInstance.createMockTrip()
+      await DeRailInstance.remTrip(1)
+      let trip = await DeRailInstance.trips.call(0)
+      let tripCount = DeRailInstance.getTripCount()
+      assert(tripCount, 0)
+    })
+
+    it('Update trip price', async () => {
+      await DeRailInstance.createMockTrip()
+      await DeRailInstance.updateTripPrice(1, web3.utils.toWei('2'))
+      let trip = await DeRailInstance.trips.call(1)
+      assert.equal(trip.price, web3.utils.toWei('2'))
+    })
+
+    it('Cancel booking', async () => {
+      await DeRailInstance.createMockTrip()
+      let balancePrior = await web3.eth.getBalance(accounts[1])
+      await DeRailInstance.bookTrip(1, {
+        from: accounts[1],
+        value: web3.utils.toWei('1'),
+      })
+      await DeRailInstance.cancelBooking(1, { from: accounts[1] })
+      let balanceAfter = await web3.eth.getBalance(accounts[1])
+      assert(balancePrior - balanceAfter < web3.utils.toWei('1'))
+    })
+  })
+
+  describe('#Chainlink tests', () => {
+    context('Contract not funded with link', () => {
+      it('reverts when requesting alarm clock', async () => {
+        await expectRevert.unspecified(
+          DeRailInstance.requestAlarmClock(1583150400)
+        )
+      })
+    })
   })
 })
