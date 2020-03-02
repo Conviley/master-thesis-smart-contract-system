@@ -44,9 +44,17 @@ contract('DeRail', async (accounts) => {
     })
 
     it('Manager can create custom trip', async () => {
-      await DeRailInstance.createTrip(545, 'cst', 'Nr', '2020-02-20', 10000, {
-        from: defaultAccount,
-      })
+      await DeRailInstance.createTrip(
+        545,
+        'cst',
+        'Nr',
+        '2020-02-20',
+        10000,
+        true,
+        {
+          from: defaultAccount,
+        }
+      )
       let tripCount = await DeRailInstance.getTripCount()
       assert.equal(tripCount, 1)
     })

@@ -18,8 +18,8 @@ contract DeRail is ChainlinkClient{
         string advertisedTimeAtLocation;
         bytes32 timeAtLocation;
         mapping(address => uint) passengers;
-        bool isRefundable;
         bool isActive;
+        bool shortTrip;
     }
 
     modifier restricted() {
@@ -51,6 +51,9 @@ contract DeRail is ChainlinkClient{
     uint private constant ORACLE_PAYMENT = 1 * LINK;
     string constant JSON_PARSE_PATH = "RESPONSE.RESULT.0.TrainAnnouncement.0.TimeAtLocation";
 
+    string private constant URL_TRAFIKVERKET = 'https://api.trafikinfo.trafikverket.se/v2/data.json';
+    string private constant URL_PASTEBIN_SJ_DELAY_TEST = 'https://pastebin.com/raw/bmcgBYCc';
+
     uint private tripKey = 1;
     uint public activeTripKey;
     mapping(address => bool) public managers;
@@ -67,8 +70,8 @@ contract DeRail is ChainlinkClient{
         string toLocationSignature,
         string advertisedTimeAtLocation,
         bytes32 timeAtLocation,
-        bool isRefundable,
-        bool isActive
+        bool isActive,
+        bool shortTrip
     );
     event LogUpdateTripPrice(address sender, uint key, uint price);
     event LogRemTrip(address sender, uint key);
@@ -104,15 +107,15 @@ contract DeRail is ChainlinkClient{
             toLocationSignature: "Nr",
             advertisedTimeAtLocation: "2020-02-18",
             timeAtLocation: 0x0,
-            isRefundable: false,
-            isActive: true
+            isActive: true,
+            shortTrip: true
         });
         tripSet.insert(key);
         trips[key] = newTrip;
         tripKey++;
         emit LogNewTrip(msg.sender, key, newTrip.passengerCount, newTrip.paybackRatio,
             newTrip.price, newTrip.trainID, newTrip.fromLocationSignature, newTrip.toLocationSignature,
-            newTrip.advertisedTimeAtLocation, newTrip.timeAtLocation, newTrip.isRefundable, newTrip.isActive);
+            newTrip.advertisedTimeAtLocation, newTrip.timeAtLocation, newTrip.isActive, newTrip.shortTrip);
     }
 
     function createTrip(
@@ -120,7 +123,8 @@ contract DeRail is ChainlinkClient{
         string memory _fromLocationSignature,
         string memory _toLocationSignature,
         string memory _advertisedTimeAtLocation,
-        uint _price
+        uint _price,
+        bool _shortTrip
     ) public {
         uint key = tripKey;
         Trip memory newTrip = Trip({
@@ -132,15 +136,15 @@ contract DeRail is ChainlinkClient{
             toLocationSignature: _toLocationSignature,
             advertisedTimeAtLocation: _advertisedTimeAtLocation,
             timeAtLocation: 0x0,
-            isRefundable: false,
-            isActive: true
+            isActive: true,
+            shortTrip: _shortTrip
         });
         tripSet.insert(key);
         trips[key] = newTrip;
         tripKey++;
         emit LogNewTrip(msg.sender, key, newTrip.passengerCount, newTrip.paybackRatio,
             newTrip.price, newTrip.trainID, newTrip.fromLocationSignature, newTrip.toLocationSignature,
-            newTrip.advertisedTimeAtLocation, newTrip.timeAtLocation, newTrip.isRefundable, newTrip.isActive);
+            newTrip.advertisedTimeAtLocation, newTrip.timeAtLocation, newTrip.isActive, newTrip.shortTrip);
     }
 
     function remTrip(uint key) external restricted requireTrip(key){
@@ -221,6 +225,29 @@ contract DeRail is ChainlinkClient{
         Trip storage trip = trips[activeTripKey];
         trip.timeAtLocation = _time;
         emit RequestTimeAtLocation(_requestId, _time);
+    }
+
+    function requestpaybackRatio() public {
+        Chainlink.Request memory req = buildChainlinkRequest(
+            ROP_DH_JOB_ID_GET_TAL,
+            address(this),
+            this.fulfillTimeAtLocation.selector
+        );
+        Trip storage trip = trips[activeTripKey];
+        req.add("url", URL_PASTEBIN_SJ_DELAY_TEST);
+        req.addUint("advertisedTrainIdent", trip.trainID);
+        req.add("locationSignature", trip.toLocationSignature);
+        req.add("advertisedTimeAtLocation", trip.advertisedTimeAtLocation);
+        sendChainlinkRequestTo(ROP_DH_ADDR_ORACLE, req, ORACLE_PAYMENT);
+    }
+
+    function fulfillpaybackRatio(bytes32 _requestId, uint _paybackRatio)
+        external
+        recordChainlinkFulfillment(_requestId)
+    {
+        Trip storage trip = trips[activeTripKey];
+        trip.paybackRatio = _paybackRatio;
+        emit RequestTimeAtLocation(_requestId, _paybackRatio);
     }
 
     function getChainlinkToken() external view returns (address) {
