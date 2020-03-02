@@ -9,12 +9,12 @@ contract DeRail is ChainlinkClient{
     HitchensUnorderedKeySetLib.Set tripSet;
 
     struct Trip {
-        uint tripID;
         uint passengerCount;
         uint paybackRatio;
         uint price;
-        string trainID;
-        string locationSignature;
+        uint trainID;
+        string fromLocationSignature;
+        string toLocationSignature;
         string advertisedTimeAtLocation;
         bytes32 timeAtLocation;
         mapping(address => uint) passengers;
@@ -59,12 +59,12 @@ contract DeRail is ChainlinkClient{
     event LogNewTrip(
         address sender,
         uint key,
-        uint tripID,
         uint passengerCount,
         uint paybackRatio,
         uint price,
-        string trainID,
-        string locationSignature,
+        uint trainID,
+        string fromLocationSignature,
+        string toLocationSignature,
         string advertisedTimeAtLocation,
         bytes32 timeAtLocation,
         bool isRefundable,
@@ -86,7 +86,7 @@ contract DeRail is ChainlinkClient{
             setPublicChainlinkToken();
         } else {
             setChainlinkToken(_link);
-    }
+        }
     }
 
     function addManager(address newManagerAddress) external restricted {
@@ -96,12 +96,12 @@ contract DeRail is ChainlinkClient{
     function createMockTrip() external restricted{
         uint key = tripKey;
         Trip memory newTrip = Trip({
-            tripID: key,
             passengerCount: 0,
             paybackRatio: 0,
             price: 1 ether,
-            trainID: "545",
-            locationSignature: "Nr",
+            trainID: 545,
+            fromLocationSignature: "cst",
+            toLocationSignature: "Nr",
             advertisedTimeAtLocation: "2020-02-18",
             timeAtLocation: 0x0,
             isRefundable: false,
@@ -110,50 +110,37 @@ contract DeRail is ChainlinkClient{
         tripSet.insert(key);
         trips[key] = newTrip;
         tripKey++;
-        emit LogNewTrip(msg.sender, key, key, 0, 0, 10000, "545", "Nr", "2020-02-18", 0x0, false, true);
+        emit LogNewTrip(msg.sender, key, newTrip.passengerCount, newTrip.paybackRatio,
+            newTrip.price, newTrip.trainID, newTrip.fromLocationSignature, newTrip.toLocationSignature,
+            newTrip.advertisedTimeAtLocation, newTrip.timeAtLocation, newTrip.isRefundable, newTrip.isActive);
     }
 
     function createTrip(
-        uint _passengerCount,
-        uint _paybackRatio,
-        uint _price,
-        string memory _trainID,
-        string memory _locationSignature,
+        uint _trainID,
+        string memory _fromLocationSignature,
+        string memory _toLocationSignature,
         string memory _advertisedTimeAtLocation,
-        bytes32 _timeAtLocation,
-        bool _isRefundable,
-        bool _isActive
+        uint _price
     ) public {
         uint key = tripKey;
         Trip memory newTrip = Trip({
-            tripID: key,
-            passengerCount: _passengerCount,
-            paybackRatio: _paybackRatio,
+            passengerCount: 0,
+            paybackRatio: 0,
             price: _price,
             trainID: _trainID,
-            locationSignature: _locationSignature,
+            fromLocationSignature: _fromLocationSignature,
+            toLocationSignature: _toLocationSignature,
             advertisedTimeAtLocation: _advertisedTimeAtLocation,
-            timeAtLocation: _timeAtLocation,
-            isRefundable: _isRefundable,
-            isActive: _isActive
+            timeAtLocation: 0x0,
+            isRefundable: false,
+            isActive: true
         });
         tripSet.insert(key);
         trips[key] = newTrip;
         tripKey++;
-        emit LogNewTrip(
-            msg.sender,
-            key,
-            key,
-            _passengerCount,
-            _paybackRatio,
-            _price,
-            _trainID,
-            _locationSignature,
-            _advertisedTimeAtLocation,
-            _timeAtLocation,
-            _isRefundable,
-            _isActive
-        );
+        emit LogNewTrip(msg.sender, key, newTrip.passengerCount, newTrip.paybackRatio,
+            newTrip.price, newTrip.trainID, newTrip.fromLocationSignature, newTrip.toLocationSignature,
+            newTrip.advertisedTimeAtLocation, newTrip.timeAtLocation, newTrip.isRefundable, newTrip.isActive);
     }
 
     function remTrip(uint key) external restricted requireTrip(key){
@@ -220,8 +207,8 @@ contract DeRail is ChainlinkClient{
             this.fulfillTimeAtLocation.selector
         );
         Trip storage trip = trips[activeTripKey];
-        req.add("advertisedTrainIdent", trip.trainID);
-        req.add("locationSignature", trip.locationSignature);
+        req.addUint("advertisedTrainIdent", trip.trainID);
+        req.add("locationSignature", trip.toLocationSignature);
         req.add("advertisedTimeAtLocation", trip.advertisedTimeAtLocation);
         req.add("path", JSON_PARSE_PATH);
         sendChainlinkRequestTo(ROP_DH_ADDR_ORACLE, req, ORACLE_PAYMENT);
