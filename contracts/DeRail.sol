@@ -82,6 +82,7 @@ contract DeRail is ChainlinkClient{
         bytes32 indexed requestId,
         bytes32 indexed time
     );
+    event RequestPaybackRatio(bytes32 indexed _requestId, uint _paybackRatio);
 
     constructor(address _link) public {
         managers[msg.sender] = true;
@@ -227,7 +228,7 @@ contract DeRail is ChainlinkClient{
         emit RequestTimeAtLocation(_requestId, _time);
     }
 
-    function requestpaybackRatio() public {
+    function requestPaybackRatio() public {
         Chainlink.Request memory req = buildChainlinkRequest(
             ROP_DH_JOB_ID_GET_TAL,
             address(this),
@@ -241,13 +242,13 @@ contract DeRail is ChainlinkClient{
         sendChainlinkRequestTo(ROP_DH_ADDR_ORACLE, req, ORACLE_PAYMENT);
     }
 
-    function fulfillpaybackRatio(bytes32 _requestId, uint _paybackRatio)
+    function fulfillPaybackRatio(bytes32 _requestId, uint _paybackRatio)
         external
         recordChainlinkFulfillment(_requestId)
     {
         Trip storage trip = trips[activeTripKey];
         trip.paybackRatio = _paybackRatio;
-        emit RequestTimeAtLocation(_requestId, _paybackRatio);
+        emit RequestPaybackRatio(_requestId, _paybackRatio);
     }
 
     function getChainlinkToken() external view returns (address) {
