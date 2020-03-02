@@ -51,6 +51,7 @@ contract DeRail is ChainlinkClient{
     uint private constant ORACLE_PAYMENT = 1 * LINK;
     string constant JSON_PARSE_PATH = "RESPONSE.RESULT.0.TrainAnnouncement.0.TimeAtLocation";
 
+    uint private tripKey = 1;
     uint public activeTripKey;
     mapping(address => bool) public managers;
     mapping(uint => Trip) public trips;
@@ -93,7 +94,7 @@ contract DeRail is ChainlinkClient{
     }
 
     function createMockTrip() external restricted{
-        uint key = getTripCount();
+        uint key = tripKey;
         Trip memory newTrip = Trip({
             tripID: key,
             passengerCount: 0,
@@ -108,7 +109,7 @@ contract DeRail is ChainlinkClient{
         });
         tripSet.insert(key);
         trips[key] = newTrip;
-
+        tripKey++;
         emit LogNewTrip(msg.sender, key, key, 0, 0, 10000, "545", "Nr", "2020-02-18", 0x0, false, true);
     }
 
@@ -123,7 +124,7 @@ contract DeRail is ChainlinkClient{
         bool _isRefundable,
         bool _isActive
     ) public {
-        uint key = getTripCount();
+        uint key = tripKey;
         Trip memory newTrip = Trip({
             tripID: key,
             passengerCount: _passengerCount,
@@ -138,7 +139,7 @@ contract DeRail is ChainlinkClient{
         });
         tripSet.insert(key);
         trips[key] = newTrip;
-
+        tripKey++;
         emit LogNewTrip(
             msg.sender,
             key,
@@ -188,6 +189,9 @@ contract DeRail is ChainlinkClient{
         msg.sender.call.value(trip.price)("");
     }
 
+    function getTripKey() external view returns(uint) {
+        return tripKey;
+    }
     // CHAINLINK FUNCTIONS
 
     // param _requestTime must be specified in the format of a UNIX timestamp
