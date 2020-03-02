@@ -232,7 +232,7 @@ contract DeRail is ChainlinkClient{
         Chainlink.Request memory req = buildChainlinkRequest(
             ROP_DH_JOB_ID_GET_TAL,
             address(this),
-            this.fulfillTimeAtLocation.selector
+            this.fulfillPaybackRatio.selector
         );
         Trip storage trip = trips[activeTripKey];
         req.add("url", URL_PASTEBIN_SJ_DELAY_TEST);
