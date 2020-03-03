@@ -10,7 +10,7 @@ contract DeRail is ChainlinkClient{
 
     struct Trip {
         uint passengerCount;
-        uint paybackRatio;
+        uint paybackRatio; // NOTE: This is really (paybackRatio*100) due to solidity's inability to handle floats.
         uint price;
         uint trainID;
         string fromLocationSignature;
@@ -19,7 +19,7 @@ contract DeRail is ChainlinkClient{
         bytes32 timeAtLocation;
         mapping(address => uint) passengers;
         bool isActive;
-        bool shortTrip;
+        uint shortTrip;
     }
 
     modifier restricted() {
@@ -48,6 +48,9 @@ contract DeRail is ChainlinkClient{
     bytes32 private constant ROP_DH_JOB_ID_GET_TAL = bytes32(
         "ac6bc509972b43f1ae85c738559384bd"
     );
+    bytes32 private constant ROP_DH_JOB_ID_CALC_PBR = bytes32(
+        "11b8eac6ccd64710bf5bcd175ef6dab2"
+    );
     uint private constant ORACLE_PAYMENT = 1 * LINK;
     string constant JSON_PARSE_PATH = "RESPONSE.RESULT.0.TrainAnnouncement.0.TimeAtLocation";
 
@@ -71,7 +74,7 @@ contract DeRail is ChainlinkClient{
         string advertisedTimeAtLocation,
         bytes32 timeAtLocation,
         bool isActive,
-        bool shortTrip
+        uint shortTrip
     );
     event LogUpdateTripPrice(address sender, uint key, uint price);
     event LogRemTrip(address sender, uint key);
@@ -109,7 +112,7 @@ contract DeRail is ChainlinkClient{
             advertisedTimeAtLocation: "2020-02-18",
             timeAtLocation: 0x0,
             isActive: true,
-            shortTrip: true
+            shortTrip: 1
         });
         tripSet.insert(key);
         trips[key] = newTrip;
@@ -125,7 +128,7 @@ contract DeRail is ChainlinkClient{
         string memory _toLocationSignature,
         string memory _advertisedTimeAtLocation,
         uint _price,
-        bool _shortTrip
+        uint _shortTrip
     ) public {
         uint key = tripKey;
         Trip memory newTrip = Trip({
@@ -212,6 +215,7 @@ contract DeRail is ChainlinkClient{
             this.fulfillTimeAtLocation.selector
         );
         Trip storage trip = trips[activeTripKey];
+        req.add("url", URL_PASTEBIN_SJ_DELAY_TEST);
         req.addUint("advertisedTrainIdent", trip.trainID);
         req.add("locationSignature", trip.toLocationSignature);
         req.add("advertisedTimeAtLocation", trip.advertisedTimeAtLocation);
@@ -227,10 +231,11 @@ contract DeRail is ChainlinkClient{
         trip.timeAtLocation = _time;
         emit RequestTimeAtLocation(_requestId, _time);
     }
-
+    
     function requestPaybackRatio() public {
+        // TODO: Both requestTimeAtLocation and this function retrieves the same data from the same data source. Fix this redundancy.
         Chainlink.Request memory req = buildChainlinkRequest(
-            ROP_DH_JOB_ID_GET_TAL,
+            ROP_DH_JOB_ID_CALC_PBR,
             address(this),
             this.fulfillPaybackRatio.selector
         );
@@ -239,6 +244,8 @@ contract DeRail is ChainlinkClient{
         req.addUint("advertisedTrainIdent", trip.trainID);
         req.add("locationSignature", trip.toLocationSignature);
         req.add("advertisedTimeAtLocation", trip.advertisedTimeAtLocation);
+        req.addUint("shortTrip", trip.shortTrip);
+        req.add("path", "paybackRatio");
         sendChainlinkRequestTo(ROP_DH_ADDR_ORACLE, req, ORACLE_PAYMENT);
     }
 

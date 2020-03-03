@@ -2,7 +2,7 @@ var request = require('request')
 var utf8 = require('utf8')
 
 exports.retrieveTALData = (req, res) => {
-  const url = 'https://api.trafikinfo.trafikverket.se/v2/data.json'
+  const url = req.body.data.url || ''
   const key = '4ac7c190db5942c8bf99fa49078c5376' // TODO: Possibly change this so that the key is stored and sent from the node operator
   const trainId = req.body.data.advertisedTrainIdent || ''
   const locationSig = req.body.data.locationSignature || ''
@@ -39,7 +39,7 @@ exports.retrieveTALData = (req, res) => {
 
   request.post(
     {
-      url: 'https://api.trafikinfo.trafikverket.se/v2/data.json',
+      url: url,
       method: 'POST',
       headers: {
         'Content-Type': 'text/xml',
@@ -62,6 +62,6 @@ exports.retrieveTALData = (req, res) => {
         console.log(returnData)
         res.status(response.statusCode).send(returnData)
       }
-    },
+    }
   )
 }

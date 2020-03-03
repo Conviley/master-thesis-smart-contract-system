@@ -1,7 +1,7 @@
 var request = require('request')
 var utf8 = require('utf8')
 
-exports.retrieveTALData = (req, res) => {
+exports.calculatePaybackRatio = (req, res) => {
   const url = req.body.data.url || ''
   const key = '4ac7c190db5942c8bf99fa49078c5376' // TODO: Possibly change this so that the key is stored and sent from the node operator
   const trainId = req.body.data.advertisedTrainIdent || ''
@@ -87,9 +87,12 @@ exports.retrieveTALData = (req, res) => {
           }
         }
 
+        var returnObj = { paybackRatio: paybackRatio }
+        var returnobjJSON = JSON.stringify(returnObj)
+
         let returnData = {
           jobRunID: req.body.id,
-          data: paybackRatio,
+          data: returnobjJSON,
         }
         console.log(returnData)
         res.status(response.statusCode).send(returnData)

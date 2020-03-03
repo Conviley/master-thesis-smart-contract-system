@@ -50,7 +50,7 @@ contract('DeRail', async (accounts) => {
         'Nr',
         '2020-02-20',
         10000,
-        true,
+        1,
         {
           from: defaultAccount,
         }
