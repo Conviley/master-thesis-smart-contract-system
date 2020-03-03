@@ -1,9 +1,13 @@
 To get up and running perform the following steps:
+# Prerequiste
+This project requires you to have truffle and node installed!
+To install node visit: https://nodejs.org/en/download/
+After node has been installed run `npm install -g truffle` to install truffle globally.
 
 1. Clone the repo
 2. `cd tqdt33` You should be on the development branch already!
 3. Run `npm install`
-4. Create Infura account att www.infura.io and set up a new project.
+4. Create Infura account at www.infura.io and set up a new project.
 5. `cd client`
 6. Run `npm install`
 7. `cd ../`
