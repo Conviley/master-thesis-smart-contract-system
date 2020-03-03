@@ -184,6 +184,15 @@ contract DeRail is ChainlinkClient{
         (bool success, ) = msg.sender.call.value(trip.price)("");
         require(success);
     }
+    
+    function withdrawRefund(uint key) external requireTrip(key){
+        Trip storage trip = trips[key];
+        require(trip.passengers[msg.sender] > 0, "User is not a passenger of this trip or has already been refunded!");
+        uint refund = trip.passengers[msg.sender] * trip.paybackRatio / 100;
+        trip.passengers[msg.sender] = 0;
+        (bool success, ) = msg.sender.call.value(refund)("");
+        require(success);
+    }
 
     function getTripKey() external view returns(uint) {
         return tripKey;
