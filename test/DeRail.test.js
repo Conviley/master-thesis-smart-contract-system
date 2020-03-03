@@ -1,7 +1,7 @@
 const { oracle } = require('@chainlink/test-helpers')
 const { expectRevert, time } = require('openzeppelin-test-helpers')
 
-contract('DeRail', async accounts => {
+contract('DeRail', async (accounts) => {
   const { LinkToken } = require('@chainlink/contracts/truffle/v0.4/LinkToken')
   const { Oracle } = require('@chainlink/contracts/truffle/v0.5/Oracle')
   const DeRail = artifacts.require('DeRail')
@@ -45,16 +45,15 @@ contract('DeRail', async accounts => {
 
     it('Manager can create custom trip', async () => {
       await DeRailInstance.createTrip(
-        0,
-        0,
-        10000,
-        '545',
+        545,
+        'cst',
         'Nr',
         '2020-02-20',
-        web3.utils.fromAscii(0),
-        false,
-        true,
-        { from: defaultAccount }
+        10000,
+        1,
+        {
+          from: defaultAccount,
+        }
       )
       let tripCount = await DeRailInstance.getTripCount()
       assert.equal(tripCount, 1)
