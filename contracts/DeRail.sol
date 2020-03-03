@@ -2,7 +2,7 @@ pragma solidity ^0.5.1;
 
 import "./HitchensUnorderedKeySet.sol";
 import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol"; // Comment out this line when testing in remix
-// import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.5/ChainlinkClient.sol"; // Uncomment this line when testing in remix
+//import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.5/ChainlinkClient.sol"; // Uncomment this line when testing in remix
 
 contract DeRail is ChainlinkClient{
     using HitchensUnorderedKeySetLib for HitchensUnorderedKeySetLib.Set;
@@ -49,7 +49,7 @@ contract DeRail is ChainlinkClient{
         "ac6bc509972b43f1ae85c738559384bd"
     );
     bytes32 private constant ROP_DH_JOB_ID_CALC_PBR = bytes32(
-        "11b8eac6ccd64710bf5bcd175ef6dab2"
+        "99884369de4745bfa3025d863932c698"
     );
     uint private constant ORACLE_PAYMENT = 1 * LINK;
     string constant JSON_PARSE_PATH = "RESPONSE.RESULT.0.TrainAnnouncement.0.TimeAtLocation";
@@ -230,8 +230,9 @@ contract DeRail is ChainlinkClient{
         Trip storage trip = trips[activeTripKey];
         trip.timeAtLocation = _time;
         emit RequestTimeAtLocation(_requestId, _time);
+        requestPaybackRatio();
     }
-
+    
     function requestPaybackRatio() public {
         // TODO: Both requestTimeAtLocation and this function retrieves the same data from the same data source. Fix this redundancy.
         Chainlink.Request memory req = buildChainlinkRequest(
@@ -240,13 +241,18 @@ contract DeRail is ChainlinkClient{
             this.fulfillPaybackRatio.selector
         );
         Trip storage trip = trips[activeTripKey];
+        bytes memory tal = toBytes(trip.timeAtLocation);
         req.add("url", URL_PASTEBIN_SJ_DELAY_TEST);
-        req.addUint("advertisedTrainIdent", trip.trainID);
-        req.add("locationSignature", trip.toLocationSignature);
         req.add("advertisedTimeAtLocation", trip.advertisedTimeAtLocation);
+        req.addBytes("timeAtLocation", tal);
         req.addUint("shortTrip", trip.shortTrip);
         req.add("path", "paybackRatio");
         sendChainlinkRequestTo(ROP_DH_ADDR_ORACLE, req, ORACLE_PAYMENT);
+    }
+    
+    function toBytes(bytes32 _data) public pure returns (bytes memory) {
+        // This function does not work as expected...
+        return abi.encodePacked(_data);
     }
 
     function fulfillPaybackRatio(bytes32 _requestId, uint _paybackRatio)
