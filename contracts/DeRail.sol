@@ -231,7 +231,7 @@ contract DeRail is ChainlinkClient{
         trip.timeAtLocation = _time;
         emit RequestTimeAtLocation(_requestId, _time);
     }
-    
+
     function requestPaybackRatio() public {
         // TODO: Both requestTimeAtLocation and this function retrieves the same data from the same data source. Fix this redundancy.
         Chainlink.Request memory req = buildChainlinkRequest(
