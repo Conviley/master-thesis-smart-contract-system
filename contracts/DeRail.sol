@@ -181,7 +181,8 @@ contract DeRail is ChainlinkClient{
         require(trip.passengers[msg.sender] > 0, "User is not a passenger of this trip!");
         trip.passengers[msg.sender] = 0;
         trip.passengerCount--;
-        msg.sender.call.value(trip.price)("");
+        (bool success, ) = msg.sender.call.value(trip.price)("");
+        require(success);
     }
 
     function getTripKey() external view returns(uint) {

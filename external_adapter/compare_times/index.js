@@ -53,5 +53,3 @@ exports.calculatePaybackRatio = (req, res) => {
     res.send(returnData)
   }
 }
-//"545","nr","cst","2020-03-01T15:50:00.000+01:00","1000000000","1"
-// 0x0000000000000000000000000000000000000000
