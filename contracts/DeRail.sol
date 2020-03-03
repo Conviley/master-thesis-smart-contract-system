@@ -19,7 +19,7 @@ contract DeRail is ChainlinkClient{
         bytes32 timeAtLocation;
         mapping(address => uint) passengers;
         bool isActive;
-        uint shortTrip;
+        uint shortTrip; // Note: Should be a bool. It is however not clear if it's possible to add a boolean to a chainlink-request. Use 1 and 0.
     }
 
     modifier restricted() {
@@ -188,7 +188,7 @@ contract DeRail is ChainlinkClient{
     function withdrawRefund(uint key) external requireTrip(key){
         Trip storage trip = trips[key];
         require(trip.passengers[msg.sender] > 0, "User is not a passenger of this trip or has already been refunded!");
-        uint refund = trip.passengers[msg.sender] * trip.paybackRatio / 100;
+        uint refund = trip.passengers[msg.sender] * trip.paybackRatio / 100; // TODO: Investigate what happens if refund results in float.
         trip.passengers[msg.sender] = 0;
         (bool success, ) = msg.sender.call.value(refund)("");
         require(success);
