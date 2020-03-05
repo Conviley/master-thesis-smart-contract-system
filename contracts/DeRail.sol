@@ -80,7 +80,7 @@ contract DeRail is ChainlinkClient{
     event LogRemTrip(address sender, uint key);
     event LogNewTripPassenger(address passengerAddressr, uint key, uint price);
 
-    event RequestAlarmClock(bytes32 indexed requestId);
+    event RequestAlarmClock(bytes32 indexed requestId, uint256 key);
     event RequestTimeAtLocation(
         bytes32 indexed requestId,
         bytes32 indexed time
@@ -200,7 +200,7 @@ contract DeRail is ChainlinkClient{
     // CHAINLINK FUNCTIONS
 
     // param _requestTime must be specified in the format of a UNIX timestamp
-    function requestAlarmClock(uint256 _requestTime, uint256 key) external restricted {
+    function requestAlarmClock(uint256 _requestTime, uint256 key) external restricted requireTrip(key){
         Chainlink.Request memory req = buildChainlinkRequest(
             ROP_CL_JOB_ID_ALARM_CLOCK,
             address(this),
@@ -214,8 +214,8 @@ contract DeRail is ChainlinkClient{
         external
         recordChainlinkFulfillment(_requestId)
     {
-        emit RequestAlarmClock(_requestId);
         uint256 ctxTripKey = tripContexts[_requestId];
+        emit RequestAlarmClock(_requestId, ctxTripKey);
         requestTimeAtLocation(ctxTripKey);
     }
 
