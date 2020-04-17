@@ -2,8 +2,8 @@ pragma solidity ^0.5.1;
 
 import "./HitchensUnorderedKeySet.sol";
 
-import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol"; // Comment out this line when testing in remix
-//import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.5/ChainlinkClient.sol"; // Uncomment this line when testing in remix
+//import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol"; // Comment out this line when testing in remix
+import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.5/ChainlinkClient.sol"; // Uncomment this line when testing in remix
 
 contract DeRail is ChainlinkClient{
     using HitchensUnorderedKeySetLib for HitchensUnorderedKeySetLib.Set;
@@ -189,19 +189,32 @@ contract DeRail is ChainlinkClient{
         require(success);
     }
     
-    function addSubmission(uint256 timeAtArrival, uint256 tripId) public {
-        submissions[tripId].push(timeAtArrival);
+    /**
+     * TODO: 
+     * Each address should only be able to vote once.
+     * Require that msg.sender is in the trip.
+     * 
+     */
+    function addSubmission(uint256 tripId, uint256 timeAtLocation) external {
+        submissions[tripId].push(timeAtLocation);
     }
     
-    function calcAverageTAL(uint256 tripID) public returns(uint256) {
+    /**
+    * @dev Performs aggregation and sets timeAtLocation of a Trip.
+    * Aggregation technique: Average
+    * @param tripID The trip ID for which to aggregate
+    */
+    function updateTALAverage(uint256 tripID) public {
+        Trip storage trip = trips[tripID];
         uint256 TALSum;
         uint256[] memory submits = submissions[tripID];
-        for (uint i=0; i<submits.length; i++) {
-            TALSum+= submits[i];
+        for (uint i = 0; i < submits.length; i++) {
+            TALSum += submits[i];
         }
         uint256 averageTAL = TALSum.div(submits.length);
-        trips[tripID].timeAtLocation = averageTAL;
-        return averageTAL;
+        trip.timeAtLocation = averageTAL;
+        
+        emit TALUpdated(tripID, trip.timeAtLocation);
     }
     
     /**
@@ -209,7 +222,7 @@ contract DeRail is ChainlinkClient{
     * Aggregation technique: Median
     * @param tripID The trip ID for which to aggregate
     */
-    function updateTAL(uint256 tripID) public {
+    function updateTALMedian(uint256 tripID) public {
         Trip storage trip = trips[tripID];
         uint256 responseLength = submissions[tripID].length;
         uint256 middleIndex = responseLength.div(2);
