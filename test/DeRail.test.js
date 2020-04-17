@@ -45,10 +45,11 @@ contract('DeRail', async (accounts) => {
 
     it('Manager can create custom trip', async () => {
       await DeRailInstance.createTrip(
-        545,
         'cst',
         'Nr',
         '2020-02-20',
+        545,
+        0,
         10000,
         1,
         {
@@ -100,6 +101,27 @@ contract('DeRail', async (accounts) => {
       await DeRailInstance.cancelBooking(1, { from: accounts[1] })
       let balanceAfter = await web3.eth.getBalance(accounts[1])
       assert(balancePrior - balanceAfter < web3.utils.toWei('1'))
+    })
+
+    it('Agregate TAL', async () => {
+      await DeRailInstance.createTrip(
+        'cst',
+        'Nr',
+        '2020-02-20',
+        545,
+        0,
+        10000,
+        1,
+        {
+          from: defaultAccount,
+        }
+      )
+      for (var i = 0; i < 3; i++) {
+        await DeRailInstance.addSubmission(i, 1, { from: defaultAccount })
+      }
+      await DeRailInstance.updateTAL(1, { from: defaultAccount })
+      let trip = await DeRailInstance.trips.call(1)
+      assert(trip.timeAtLocation == 1)
     })
   })
 

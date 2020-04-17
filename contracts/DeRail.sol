@@ -1,13 +1,14 @@
 pragma solidity ^0.5.1;
 
 import "./HitchensUnorderedKeySet.sol";
+
 import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol"; // Comment out this line when testing in remix
-// import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.5/ChainlinkClient.sol"; // Uncomment this line when testing in remix
+//import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.5/ChainlinkClient.sol"; // Uncomment this line when testing in remix
 
 contract DeRail is ChainlinkClient{
     using HitchensUnorderedKeySetLib for HitchensUnorderedKeySetLib.Set;
     HitchensUnorderedKeySetLib.Set tripSet;
-
+    
     struct Trip {
         uint passengerCount;
         uint paybackRatio; // NOTE: This is really (paybackRatio*100) due to solidity's inability to handle floats.
@@ -16,10 +17,12 @@ contract DeRail is ChainlinkClient{
         string fromLocationSignature;
         string toLocationSignature;
         string advertisedTimeAtLocation;
-        bytes32 timeAtLocation;
+        uint256 timeAtLocation;
         mapping(address => uint) passengers;
+        mapping(address => bool) hasSubmitted;
         bool isActive;
         uint shortTrip; // Note: Should be a bool. It is however not clear if it's possible to add a boolean to a chainlink-request. Use 1 and 0.
+        uint256 submissionsID;
     }
 
     modifier restricted() {
@@ -28,7 +31,13 @@ contract DeRail is ChainlinkClient{
     }
 
     modifier requireTrip(uint key) {
-        require(tripSet.exists(key), "Can't get a trip that doesn't exist.");
+        require(tripSet.exists(key), "Trip doesn't exist.");
+        _;
+    }
+    
+    modifier nonSubmittedPassengerOnly(uint key) {
+        require(trips[key].passengers[msg.sender] > 0, "sender is not a passenger on this trip");
+        require(!trips[key].hasSubmitted[msg.sender], "Passenger already submitted");
         _;
     }
 
@@ -61,7 +70,8 @@ contract DeRail is ChainlinkClient{
     mapping(address => bool) public managers;
     mapping(uint => Trip) public trips;
     mapping(bytes32 => uint256) private tripContexts;
-
+    mapping(uint256 => uint256[]) public submissions;
+    
     event LogNewTrip(
         address sender,
         uint key,
@@ -72,7 +82,7 @@ contract DeRail is ChainlinkClient{
         string fromLocationSignature,
         string toLocationSignature,
         string advertisedTimeAtLocation,
-        bytes32 timeAtLocation,
+        uint256 timeAtLocation,
         bool isActive,
         uint shortTrip
     );
@@ -86,6 +96,7 @@ contract DeRail is ChainlinkClient{
         bytes32 indexed time
     );
     event RequestPaybackRatio(bytes32 indexed _requestId, uint _paybackRatio);
+    event TALUpdated(uint256 tripID, uint256 TAL);
 
     constructor(address _link) public {
         managers[msg.sender] = true;
@@ -101,32 +112,15 @@ contract DeRail is ChainlinkClient{
     }
 
     function createMockTrip() external restricted{
-        uint key = tripKey;
-        Trip memory newTrip = Trip({
-            passengerCount: 0,
-            paybackRatio: 0,
-            price: 1 ether,
-            trainID: 545,
-            fromLocationSignature: "cst",
-            toLocationSignature: "Nr",
-            advertisedTimeAtLocation: "2020-02-18",
-            timeAtLocation: 0x0,
-            isActive: true,
-            shortTrip: 1
-        });
-        tripSet.insert(key);
-        trips[key] = newTrip;
-        tripKey++;
-        emit LogNewTrip(msg.sender, key, newTrip.passengerCount, newTrip.paybackRatio,
-            newTrip.price, newTrip.trainID, newTrip.fromLocationSignature, newTrip.toLocationSignature,
-            newTrip.advertisedTimeAtLocation, newTrip.timeAtLocation, newTrip.isActive, newTrip.shortTrip);
+        createTrip("cst", "nr", "2020-02-18", 545, 0x0, 1 ether, 1);
     }
 
     function createTrip(
-        uint _trainID,
         string memory _fromLocationSignature,
         string memory _toLocationSignature,
         string memory _advertisedTimeAtLocation,
+        uint _trainID,
+        uint timeAtLocation,
         uint _price,
         uint _shortTrip
     ) public {
@@ -139,9 +133,10 @@ contract DeRail is ChainlinkClient{
             fromLocationSignature: _fromLocationSignature,
             toLocationSignature: _toLocationSignature,
             advertisedTimeAtLocation: _advertisedTimeAtLocation,
-            timeAtLocation: 0x0,
+            timeAtLocation: 0,
             isActive: true,
-            shortTrip: _shortTrip
+            shortTrip: _shortTrip,
+            submissionsID: tripKey
         });
         tripSet.insert(key);
         trips[key] = newTrip;
@@ -193,6 +188,103 @@ contract DeRail is ChainlinkClient{
         (bool success, ) = msg.sender.call.value(refund)("");
         require(success);
     }
+    
+    function addSubmission(uint256 timeAtArrival, uint256 tripId) public {
+        submissions[tripId].push(timeAtArrival);
+    }
+    
+    function calcAverageTAL(uint256 tripID) public returns(uint256) {
+        uint256 TALSum;
+        uint256[] memory submits = submissions[tripID];
+        for (uint i=0; i<submits.length; i++) {
+            TALSum+= submits[i];
+        }
+        uint256 averageTAL = TALSum.div(submits.length);
+        trips[tripID].timeAtLocation = averageTAL;
+        return averageTAL;
+    }
+    
+    /**
+    * @dev Performs aggregation and sets timeAtLocation of a Trip.
+    * Aggregation technique: Median
+    * @param tripID The trip ID for which to aggregate
+    */
+    function updateTAL(uint256 tripID) public {
+        Trip storage trip = trips[tripID];
+        uint256 responseLength = submissions[tripID].length;
+        uint256 middleIndex = responseLength.div(2);
+        if (responseLength % 2 == 0) {
+          uint256 median1 = quickselect(submissions[tripID], middleIndex);
+          uint256 median2 = quickselect(submissions[tripID], middleIndex.add(1)); // quickselect is 1 indexed
+          // solium-disable-next-line zeppelin/no-arithmetic-operations
+          trip.timeAtLocation = median1.add(median2) / 2; // signed integers are not supported by SafeMath
+        } else {
+          trip.timeAtLocation = quickselect(submissions[tripID], middleIndex.add(1)); // quickselect is 1 indexed
+        }
+        
+        emit TALUpdated(tripID, trip.timeAtLocation);
+    }
+    
+
+    /**
+    * @dev Returns the kth value of the ordered array
+    * See: http://www.cs.yale.edu/homes/aspnes/pinewiki/QuickSelect.html
+    * @param _a The list of elements to pull from
+    * @param _k The index, 1 based, of the elements you want to pull from when ordered
+    */
+    function quickselect(uint256[] memory _a, uint256 _k)
+    private
+    pure
+    returns (uint256) {
+        uint256[] memory a = _a;
+        uint256 k = _k;
+        uint256 aLen = a.length;
+        uint256[] memory a1 = new uint256[](aLen);
+        uint256[] memory a2 = new uint256[](aLen);
+        uint256 a1Len;
+        uint256 a2Len;
+        uint256 pivot;
+        uint256 i;
+        
+        while (true) {
+          pivot = a[aLen.div(2)];
+          a1Len = 0;
+          a2Len = 0;
+          for (i = 0; i < aLen; i++) {
+            if (a[i] < pivot) {
+              a1[a1Len] = a[i];
+              a1Len++;
+            } else if (a[i] > pivot) {
+              a2[a2Len] = a[i];
+              a2Len++;
+            }
+          }
+          if (k <= a1Len) {
+            aLen = a1Len;
+            (a, a1) = swap(a, a1);
+          } else if (k > (aLen.sub(a2Len))) {
+            k = k.sub(aLen.sub(a2Len));
+            aLen = a2Len;
+            (a, a2) = swap(a, a2);
+          } else {
+            return pivot;
+          }
+        }
+    }
+    
+    /**
+    * @dev Swaps the pointers to two uint256 arrays in memory
+    * @param _a The pointer to the first in memory array
+    * @param _b The pointer to the second in memory array
+    */
+    function swap(uint256[] memory _a, uint256[] memory _b)
+    private
+    pure
+    returns(uint256[] memory, uint256[] memory)
+    {
+        return (_b, _a);
+    }
+
 
     function getTripKey() external view returns(uint) {
         return tripKey;
@@ -243,7 +335,7 @@ contract DeRail is ChainlinkClient{
         uint256 ctxTripKey = tripContexts[_requestId];
         delete tripContexts[_requestId];
         Trip storage trip = trips[ctxTripKey];
-        trip.timeAtLocation = _time;
+        trip.timeAtLocation = uint256(_time);
         emit RequestTimeAtLocation(_requestId, _time);
     }
 
