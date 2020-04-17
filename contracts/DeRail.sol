@@ -190,52 +190,50 @@ contract DeRail is ChainlinkClient{
     }
     
     /**
-     * TODO: 
-     * Each address should only be able to vote once.
-     * Require that msg.sender is in the trip.
      * 
      */
-    function addSubmission(uint256 tripId, uint256 timeAtLocation) external {
-        submissions[tripId].push(timeAtLocation);
+    function addSubmission(uint256 key, uint256 timeAtLocation) external nonSubmittedPassengerOnly(key) {
+        trips[key].hasSubmitted[msg.sender] = true;
+        submissions[key].push(timeAtLocation);
     }
     
     /**
     * @dev Performs aggregation and sets timeAtLocation of a Trip.
     * Aggregation technique: Average
-    * @param tripID The trip ID for which to aggregate
+    * @param key The trip key for which to aggregate
     */
-    function updateTALAverage(uint256 tripID) public {
-        Trip storage trip = trips[tripID];
+    function updateTALAverage(uint256 key) public {
+        Trip storage trip = trips[key];
         uint256 TALSum;
-        uint256[] memory submits = submissions[tripID];
-        for (uint i = 0; i < submits.length; i++) {
-            TALSum += submits[i];
+        uint256[] memory submits = submissions[key];
+        for (uint i=0; i<submits.length; i++) {
+            TALSum+= submits[i];
         }
         uint256 averageTAL = TALSum.div(submits.length);
         trip.timeAtLocation = averageTAL;
         
-        emit TALUpdated(tripID, trip.timeAtLocation);
+        emit TALUpdated(key, trip.timeAtLocation);
     }
     
     /**
     * @dev Performs aggregation and sets timeAtLocation of a Trip.
     * Aggregation technique: Median
-    * @param tripID The trip ID for which to aggregate
+    * @param key The trip key for which to aggregate
     */
-    function updateTALMedian(uint256 tripID) public {
-        Trip storage trip = trips[tripID];
-        uint256 responseLength = submissions[tripID].length;
+    function updateTALMedian(uint256 key) public {
+        Trip storage trip = trips[key];
+        uint256 responseLength = submissions[key].length;
         uint256 middleIndex = responseLength.div(2);
         if (responseLength % 2 == 0) {
-          uint256 median1 = quickselect(submissions[tripID], middleIndex);
-          uint256 median2 = quickselect(submissions[tripID], middleIndex.add(1)); // quickselect is 1 indexed
+          uint256 median1 = quickselect(submissions[key], middleIndex);
+          uint256 median2 = quickselect(submissions[key], middleIndex.add(1)); // quickselect is 1 indexed
           // solium-disable-next-line zeppelin/no-arithmetic-operations
           trip.timeAtLocation = median1.add(median2) / 2; // signed integers are not supported by SafeMath
         } else {
-          trip.timeAtLocation = quickselect(submissions[tripID], middleIndex.add(1)); // quickselect is 1 indexed
+          trip.timeAtLocation = quickselect(submissions[key], middleIndex.add(1)); // quickselect is 1 indexed
         }
         
-        emit TALUpdated(tripID, trip.timeAtLocation);
+        emit TALUpdated(key, trip.timeAtLocation);
     }
     
 
