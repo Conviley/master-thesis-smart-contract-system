@@ -1,7 +1,7 @@
 const { oracle } = require('@chainlink/test-helpers')
 const { expectRevert, time } = require('openzeppelin-test-helpers')
 
-contract('DeRail', async (accounts) => {
+contract('DeRail', async accounts => {
   const { LinkToken } = require('@chainlink/contracts/truffle/v0.4/LinkToken')
   const { Oracle } = require('@chainlink/contracts/truffle/v0.5/Oracle')
   const DeRail = artifacts.require('DeRail')
@@ -129,7 +129,7 @@ contract('DeRail', async (accounts) => {
     context('Contract not funded with link', () => {
       it('reverts when requesting alarm clock', async () => {
         await expectRevert.unspecified(
-          DeRailInstance.requestAlarmClock(1583150400)
+          DeRailInstance.requestAlarmClock(1583150400, 1)
         )
       })
     })
