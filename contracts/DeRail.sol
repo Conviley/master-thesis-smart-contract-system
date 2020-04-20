@@ -10,10 +10,10 @@ contract DeRail is ChainlinkClient{
     HitchensUnorderedKeySetLib.Set tripSet;
     
     struct Trip {
-        uint passengerCount;
-        uint paybackRatio; // NOTE: This is really (paybackRatio*100) due to solidity's inability to handle floats.
-        uint price;
-        uint trainID;
+        uint256 passengerCount;
+        uint256 paybackRatio; // NOTE: This is really (paybackRatio*100) due to solidity's inability to handle floats.
+        uint256 price;
+        uint256 trainID;
         string fromLocationSignature;
         string toLocationSignature;
         string advertisedTimeAtLocation;
@@ -21,7 +21,7 @@ contract DeRail is ChainlinkClient{
         mapping(address => uint) passengers;
         mapping(address => bool) hasSubmitted;
         bool isActive;
-        uint shortTrip; // Note: Should be a bool. It is however not clear if it's possible to add a boolean to a chainlink-request. Use 1 and 0.
+        uint256 shortTrip; // Note: Should be a bool. It is however not clear if it's possible to add a boolean to a chainlink-request. Use 1 and 0.
         uint256 submissionsID;
     }
 
@@ -30,12 +30,12 @@ contract DeRail is ChainlinkClient{
         _;
     }
 
-    modifier requireTrip(uint key) {
+    modifier requireTrip(uint256 key) {
         require(tripSet.exists(key), "Trip doesn't exist.");
         _;
     }
     
-    modifier nonSubmittedPassengerOnly(uint key) {
+    modifier nonSubmittedPassengerOnly(uint256 key) {
         require(trips[key].passengers[msg.sender] > 0, "sender is not a passenger on this trip");
         require(!trips[key].hasSubmitted[msg.sender], "Passenger already submitted");
         _;
@@ -60,42 +60,42 @@ contract DeRail is ChainlinkClient{
     bytes32 private constant ROP_DH_JOB_ID_CALC_PBR = bytes32(
         "11b8eac6ccd64710bf5bcd175ef6dab2"
     );
-    uint private constant ORACLE_PAYMENT = 1 * LINK;
+    uint256 private constant ORACLE_PAYMENT = 1 * LINK;
     string constant JSON_PARSE_PATH = "RESPONSE.RESULT.0.TrainAnnouncement.0.TimeAtLocation";
 
     string private constant URL_TRAFIKVERKET = 'https://api.trafikinfo.trafikverket.se/v2/data.json';
     string private constant URL_PASTEBIN_SJ_DELAY_TEST = 'https://pastebin.com/raw/bmcgBYCc';
 
-    uint private tripKey = 1;
+    uint256 private tripKey = 1;
     mapping(address => bool) public managers;
-    mapping(uint => Trip) public trips;
+    mapping(uint256 => Trip) public trips;
     mapping(bytes32 => uint256) private tripContexts;
     mapping(uint256 => uint256[]) public submissions;
     
     event LogNewTrip(
         address sender,
-        uint key,
-        uint passengerCount,
-        uint paybackRatio,
-        uint price,
-        uint trainID,
+        uint256 key,
+        uint256 passengerCount,
+        uint256 paybackRatio,
+        uint256 price,
+        uint256 trainID,
         string fromLocationSignature,
         string toLocationSignature,
         string advertisedTimeAtLocation,
         uint256 timeAtLocation,
         bool isActive,
-        uint shortTrip
+        uint256 shortTrip
     );
-    event LogUpdateTripPrice(address sender, uint key, uint price);
-    event LogRemTrip(address sender, uint key);
-    event LogNewTripPassenger(address passengerAddressr, uint key, uint price);
+    event LogUpdateTripPrice(address sender, uint256 key, uint256 price);
+    event LogRemTrip(address sender, uint256 key);
+    event LogNewTripPassenger(address passengerAddressr, uint256 key, uint256 price);
 
     event RequestAlarmClock(bytes32 indexed requestId);
     event RequestTimeAtLocation(
         bytes32 indexed requestId,
         bytes32 indexed time
     );
-    event RequestPaybackRatio(bytes32 indexed _requestId, uint _paybackRatio);
+    event RequestPaybackRatio(bytes32 indexed _requestId, uint256 _paybackRatio);
     event TALUpdated(uint256 tripID, uint256 TAL);
 
     constructor(address _link) public {
@@ -115,7 +115,7 @@ contract DeRail is ChainlinkClient{
         return tripKey;
     }
     
-    function getTripCount() public view returns(uint count) {
+    function getTripCount() public view returns(uint256 count) {
         return tripSet.count();
     }
     
@@ -143,12 +143,12 @@ contract DeRail is ChainlinkClient{
         string memory _fromLocationSignature,
         string memory _toLocationSignature,
         string memory _advertisedTimeAtLocation,
-        uint _trainID,
-        uint timeAtLocation,
-        uint _price,
-        uint _shortTrip
+        uint256 _trainID,
+        uint256 timeAtLocation,
+        uint256 _price,
+        uint256 _shortTrip
     ) public {
-        uint key = tripKey;
+        uint256 key = tripKey;
         Trip memory newTrip = Trip({
             passengerCount: 0,
             paybackRatio: 0,
@@ -170,14 +170,14 @@ contract DeRail is ChainlinkClient{
             newTrip.advertisedTimeAtLocation, newTrip.timeAtLocation, newTrip.isActive, newTrip.shortTrip);
     }
 
-    function remTrip(uint key) external restricted requireTrip(key){
+    function remTrip(uint256 key) external restricted requireTrip(key){
         // TODO return money to passengers if trip is active
         tripSet.remove(key); // Note that this will fail automatically if the key doesn't exist
         delete trips[key];
         emit LogRemTrip(msg.sender, key);
     }
 
-    function updateTripPrice(uint key, uint price) external restricted requireTrip(key){
+    function updateTripPrice(uint256 key, uint256 price) external restricted requireTrip(key){
         Trip storage trip = trips[key];
         trip.price = price;
         emit LogUpdateTripPrice(msg.sender, key, price);
@@ -187,7 +187,7 @@ contract DeRail is ChainlinkClient{
     //////////////////// INTERACTION FUNCTIONS FOR PASSENGERS ///////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////
 
-    function bookTrip(uint key) external payable requireTrip(key){
+    function bookTrip(uint256 key) external payable requireTrip(key){
         Trip storage trip = trips[key];
         require(msg.value == trip.price, "User did not pay the exact price of the trip");
         trip.passengers[msg.sender] = trip.price;
@@ -195,7 +195,7 @@ contract DeRail is ChainlinkClient{
         emit LogNewTripPassenger(msg.sender, key, trip.price);
     }
 
-    function cancelBooking(uint key) external requireTrip(key){
+    function cancelBooking(uint256 key) external requireTrip(key){
         Trip storage trip = trips[key];
         require(trip.passengers[msg.sender] > 0, "User is not a passenger of this trip!");
         trip.passengers[msg.sender] = 0;
@@ -204,10 +204,10 @@ contract DeRail is ChainlinkClient{
         require(success);
     }
     
-    function withdrawRefund(uint key) external requireTrip(key){
+    function withdrawRefund(uint256 key) external requireTrip(key){
         Trip storage trip = trips[key];
         require(trip.passengers[msg.sender] > 0, "User is not a passenger of this trip or has already been refunded!");
-        uint refund = trip.passengers[msg.sender] * trip.paybackRatio / 100; // TODO: Investigate what happens if refund results in float.
+        uint256 refund = trip.passengers[msg.sender] * trip.paybackRatio / 100; // TODO: Investigate what happens if refund results in float.
         trip.passengers[msg.sender] = 0;
         (bool success, ) = msg.sender.call.value(refund)("");
         require(success);
@@ -238,7 +238,7 @@ contract DeRail is ChainlinkClient{
         Trip storage trip = trips[key];
         uint256 TALSum;
         uint256[] memory submits = submissions[key];
-        for (uint i=0; i<submits.length; i++) {
+        for (uint256 i=0; i<submits.length; i++) {
             TALSum+= submits[i];
         }
         uint256 averageTAL = TALSum.div(submits.length);
@@ -397,7 +397,7 @@ contract DeRail is ChainlinkClient{
         tripContexts[sendChainlinkRequestTo(ROP_DH_ADDR_ORACLE, req, ORACLE_PAYMENT)] = key;
     }
 
-    function fulfillPaybackRatio(bytes32 _requestId, uint _paybackRatio)
+    function fulfillPaybackRatio(bytes32 _requestId, uint256 _paybackRatio)
         external
         recordChainlinkFulfillment(_requestId)
     {
