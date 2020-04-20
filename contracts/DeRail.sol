@@ -2,8 +2,8 @@ pragma solidity ^0.5.1;
 
 import "./HitchensUnorderedKeySet.sol";
 
-//import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol"; // Comment out this line when testing in remix
-import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.5/ChainlinkClient.sol"; // Uncomment this line when testing in remix
+import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol"; // Comment out this line when testing in remix
+//import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.5/ChainlinkClient.sol"; // Uncomment this line when testing in remix
 
 contract DeRail is ChainlinkClient{
     using HitchensUnorderedKeySetLib for HitchensUnorderedKeySetLib.Set;
@@ -106,13 +106,34 @@ contract DeRail is ChainlinkClient{
             setChainlinkToken(_link);
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////// NON-MODIFYING FUNCTIONS /////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
+    
+    function getTripKey() external view returns(uint) {
+        return tripKey;
+    }
+    
+    function getTripCount() public view returns(uint count) {
+        return tripSet.count();
+    }
+    
+    
+    function getChainlinkToken() external view returns (address) {
+        return chainlinkTokenAddress();
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////// INTERACTION FUNCTIONS FOR ADMINS /////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
 
     function addManager(address newManagerAddress) external restricted {
         managers[newManagerAddress] = true;
     }
 
     function createMockTrip() external restricted{
-        createTrip("cst", "nr", "2020-02-18", 545, 0x0, 1 ether, 1);
+        createTrip("cst", "nr", "2020-02-18", 545, 0x0, 100 finney, 1);
     }
 
     function createTrip(
@@ -153,15 +174,15 @@ contract DeRail is ChainlinkClient{
         emit LogRemTrip(msg.sender, key);
     }
 
-    function getTripCount() public view returns(uint count) {
-        return tripSet.count();
-    }
-
     function updateTripPrice(uint key, uint price) external restricted requireTrip(key){
         Trip storage trip = trips[key];
         trip.price = price;
         emit LogUpdateTripPrice(msg.sender, key, price);
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////////
+    //////////////////// INTERACTION FUNCTIONS FOR PASSENGERS ///////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
 
     function bookTrip(uint key) external payable requireTrip(key){
         Trip storage trip = trips[key];
@@ -189,13 +210,21 @@ contract DeRail is ChainlinkClient{
         require(success);
     }
     
+    /////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////// SUBMISSION FUNCTIONS /////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
+    
     /**
-     * 
+     * Direct way of providing the contact with a proposed timeAtLocation.
      */
     function addSubmission(uint256 key, uint256 timeAtLocation) external nonSubmittedPassengerOnly(key) {
         trips[key].hasSubmitted[msg.sender] = true;
         submissions[key].push(timeAtLocation);
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////// AGGREGATION FUNCTIONS ////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
     
     /**
     * @dev Performs aggregation and sets timeAtLocation of a Trip.
@@ -235,7 +264,6 @@ contract DeRail is ChainlinkClient{
         
         emit TALUpdated(key, trip.timeAtLocation);
     }
-    
 
     /**
     * @dev Returns the kth value of the ordered array
@@ -295,12 +323,11 @@ contract DeRail is ChainlinkClient{
     {
         return (_b, _a);
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////// CHAINLINK FUNCTIONS //////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
 
-
-    function getTripKey() external view returns(uint) {
-        return tripKey;
-    }
-    // CHAINLINK FUNCTIONS
 
     // param _requestTime must be specified in the format of a UNIX timestamp
     function requestAlarmClock(uint256 _requestTime, uint256 key) external restricted {
@@ -376,10 +403,6 @@ contract DeRail is ChainlinkClient{
         Trip storage trip = trips[key];
         trip.paybackRatio = _paybackRatio;
         emit RequestPaybackRatio(_requestId, _paybackRatio);
-    }
-
-    function getChainlinkToken() external view returns (address) {
-        return chainlinkTokenAddress();
     }
 
     function withdrawLink() external restricted {
