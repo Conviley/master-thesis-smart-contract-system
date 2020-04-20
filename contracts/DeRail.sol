@@ -238,8 +238,8 @@ contract DeRail is ChainlinkClient{
         Trip storage trip = trips[key];
         uint256 TALSum;
         uint256[] memory submits = submissions[key];
-        for (uint256 i=0; i<submits.length; i++) {
-            TALSum+= submits[i];
+        for (uint256 i = 0; i < submits.length; i++) {
+            TALSum += submits[i];
         }
         uint256 averageTAL = TALSum.div(submits.length);
         trip.timeAtLocation = averageTAL;
