@@ -5,7 +5,7 @@ const { Oracle } = require('@chainlink/contracts/truffle/v0.5/Oracle')
 module.exports = (deployer, network, [defaultAccount]) => {
   // Local (development) networks need their own deployment of the LINK
   // token and the Oracle contract
-  if (!network.startsWith('live') || !network.startsWith('ropsten')) {
+  if (!network.startsWith('live') && !network.startsWith('ropsten')) {
     LinkToken.setProvider(deployer.provider)
     Oracle.setProvider(deployer.provider)
 
