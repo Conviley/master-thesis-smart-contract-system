@@ -136,7 +136,7 @@ contract DeRail is ChainlinkClient{
     }
 
     function createMockTrip() external restricted{
-        createTrip("cst", "nr", "2020-02-18", 545, 0x0, 100 finney, 1);
+        createTrip("cst", "nr", "2020-02-18", 545, 100 finney, 1);
     }
 
     function createTrip(
@@ -144,7 +144,6 @@ contract DeRail is ChainlinkClient{
         string memory _toLocationSignature,
         string memory _advertisedTimeAtLocation,
         uint _trainID,
-        uint timeAtLocation,
         uint _price,
         uint _shortTrip
     ) public {
