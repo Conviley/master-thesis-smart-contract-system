@@ -119,6 +119,9 @@ contract DeRail is ChainlinkClient{
         return tripSet.count();
     }
     
+    function getSubmissions(uint256 key) external view returns (uint256[] memory) {
+        return submissions[key];
+    }
     
     function getChainlinkToken() external view returns (address) {
         return chainlinkTokenAddress();
