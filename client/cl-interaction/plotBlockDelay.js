@@ -5,37 +5,37 @@ const rawData = require(OUTPUT_FILE_PATH)
 var trace1 = {
   x: [],
   y: [],
-  name: 'Min Elapsed Time',
+  name: 'Min Block Delay',
   type: 'bar',
 }
 
 var trace2 = {
   x: [],
   y: [],
-  name: 'Avg Elapsed TIme',
+  name: 'Avg Block Delay',
   type: 'bar',
 }
 
 var trace3 = {
   x: [],
   y: [],
-  name: 'Max Elapsed Time',
+  name: 'Max Block Delay',
   type: 'bar',
 }
 
 for (var key in rawData) {
   trace1.x.push(key)
-  trace1.y.push(rawData[key].minTimeSpent)
+  trace1.y.push(rawData[key].minBlockDelay)
   trace2.x.push(key)
-  trace2.y.push(rawData[key].avgTimeSpent)
+  trace2.y.push(rawData[key].avgBlockDelay)
   trace3.x.push(key)
-  trace3.y.push(rawData[key].maxTimeSpent)
+  trace3.y.push(rawData[key].maxBlockDelay)
 }
 
 var data = [trace1, trace2, trace3]
 const layout = {
   title: {
-    text: 'Time Elapsed',
+    text: 'Blovk Delay',
     xref: 'paper',
     x: 0.05,
   },
@@ -46,7 +46,7 @@ const layout = {
   },
   yaxis: {
     title: {
-      text: 'Seconds[s]',
+      text: 'Blocks',
     },
   },
 }

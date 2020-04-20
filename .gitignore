@@ -6,3 +6,4 @@ package-lock.json
 address.json
 infura.json
 build
+rawData.json
