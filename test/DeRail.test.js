@@ -1,7 +1,7 @@
 const { oracle } = require('@chainlink/test-helpers')
 const { expectRevert, time } = require('openzeppelin-test-helpers')
 
-contract('DeRail', async accounts => {
+contract('DeRail', async (accounts) => {
   const { LinkToken } = require('@chainlink/contracts/truffle/v0.4/LinkToken')
   const { Oracle } = require('@chainlink/contracts/truffle/v0.5/Oracle')
   const DeRail = artifacts.require('DeRail')
@@ -49,7 +49,6 @@ contract('DeRail', async accounts => {
         'Nr',
         '2020-02-20',
         545,
-        0,
         10000,
         1,
         {
@@ -70,7 +69,7 @@ contract('DeRail', async accounts => {
       await DeRailInstance.createMockTrip()
       await DeRailInstance.bookTrip(1, {
         from: accounts[0],
-        value: web3.utils.toWei('1'),
+        value: web3.utils.toWei('0.1'),
       })
       let trip = await DeRailInstance.trips.call(1)
       assert.equal(trip.passengerCount, 1)
@@ -96,11 +95,11 @@ contract('DeRail', async accounts => {
       let balancePrior = await web3.eth.getBalance(accounts[1])
       await DeRailInstance.bookTrip(1, {
         from: accounts[1],
-        value: web3.utils.toWei('1'),
+        value: web3.utils.toWei('0.1'),
       })
       await DeRailInstance.cancelBooking(1, { from: accounts[1] })
       let balanceAfter = await web3.eth.getBalance(accounts[1])
-      assert(balancePrior - balanceAfter < web3.utils.toWei('1'))
+      assert(balancePrior - balanceAfter < web3.utils.toWei('0.1'))
     })
 
     it('Agregate TAL', async () => {
@@ -109,7 +108,6 @@ contract('DeRail', async accounts => {
         'Nr',
         '2020-02-20',
         545,
-        0,
         10000,
         1,
         {
@@ -117,9 +115,11 @@ contract('DeRail', async accounts => {
         }
       )
       for (var i = 0; i < 3; i++) {
-        await DeRailInstance.addSubmission(i, 1, { from: defaultAccount })
+        await DeRailInstance.addSubmissionNoCheck(1, i, {
+          from: defaultAccount,
+        })
       }
-      await DeRailInstance.updateTAL(1, { from: defaultAccount })
+      await DeRailInstance.updateTALAverage(1, { from: defaultAccount })
       let trip = await DeRailInstance.trips.call(1)
       assert(trip.timeAtLocation == 1)
     })
