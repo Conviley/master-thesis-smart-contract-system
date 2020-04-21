@@ -1,4 +1,4 @@
-const TRANSACTIONS = 2
+var TRANSACTIONS = 21
 const OUTPUT_FILE_PATH = './rawData.json'
 
 const HDWalletProvider = require('../../node_modules/@truffle/hdwallet-provider')
@@ -13,24 +13,18 @@ const mnemonic = fs
   .readFileSync('../../.secret')
   .toString()
   .trim()
-const walletprovider = new HDWalletProvider(
-  mnemonic,
-  infura.endpoint,
-  0,
-  TRANSACTIONS
-)
+const walletprovider = new HDWalletProvider(mnemonic, infura.endpoint, 0, 100)
 
 const web3 = new Web3(walletprovider)
 const instance = new web3.eth.Contract(DeRail.abi, address.address, {
   gasPrice: '20000000000',
 })
 
-async function fundAccounts() {
+async function fundAccounts(accountsAmount, etherAmount) {
   let accounts = await web3.eth.getAccounts()
-  const amount = '0.001'
-  const amountToSend = web3.utils.toWei(amount)
+  const amountToSend = web3.utils.toWei(etherAmount)
   const transactions = []
-  for (var i = 0; i < TRANSACTIONS; i++) {
+  for (var i = 0; i < accountsAmount; i++) {
     transactions.push(
       web3.eth.sendTransaction({
         from: accounts[0],
@@ -39,9 +33,22 @@ async function fundAccounts() {
       })
     )
   }
-
+  console.log(
+    'Funding the first',
+    accountsAmount,
+    'accounts with',
+    etherAmount,
+    'ether...'
+  )
   Promise.all(transactions)
     .then((receipts) => {
+      console.log(
+        'Success!',
+        TRANSACTIONS,
+        'accounts funded with',
+        etherAmount,
+        'ether'
+      )
       getBalances()
     })
     .catch((error) => {
@@ -60,6 +67,7 @@ async function getBalances() {
     balances.forEach((balance) => {
       console.log(balance)
     })
+
     process.exit()
   })
 }
@@ -73,6 +81,7 @@ async function multipleTx() {
   const sendTimeStamp = Date.now()
 
   for (let i = 0; i < TRANSACTIONS; i++) {
+    console.log('account', i, 'is', accounts[i])
     promisesArr.push(
       instance.methods.addSubmission(139, 1).send({
         from: accounts[i],
@@ -80,7 +89,6 @@ async function multipleTx() {
       })
     )
   }
-
   await Promise.all(promisesArr)
     .then(async (receipts) => {
       let lastBlock = receipts[0].blockNumber
@@ -89,7 +97,6 @@ async function multipleTx() {
         lastBlock =
           receipt.blockNumber > lastBlock ? receipt.blockNumber : lastBlock
       })
-
       await outputResults(
         sendTimeStamp,
         totalGasUsed,
@@ -98,7 +105,7 @@ async function multipleTx() {
       )
     })
     .catch((error) => {
-      console.log(error)
+      console.log('multipleTX():', error)
     })
 }
 
@@ -140,7 +147,7 @@ async function outputResults(
     await fs.writeJson(OUTPUT_FILE_PATH, outputFile)
     console.log('Success! Result written to:', OUTPUT_FILE_PATH)
   } catch (err) {
-    console.log(err)
+    console.log('outputResults():', err)
   }
 }
 
@@ -201,15 +208,18 @@ function updateDataPointValues(jsonKey, entry) {
     maxBlockDelay: maxBlockDelay,
   }
 }
-//getBalances()
-//fundAccounts()
+
 async function test(n) {
-  for (let i = 0; i < n; i++) {
+  let transactionMultiplier = TRANSACTIONS
+  for (let i = 1; i < n + 1; i++) {
+    TRANSACTIONS = transactionMultiplier * i
     await multipleTx()
   }
 }
 
-test(5).then((_) => {
+test(1).then((_) => {
   console.log('Test Finished!')
   process.exit(0)
 })
+//getBalances()
+//fundAccounts(100, '0.01')
