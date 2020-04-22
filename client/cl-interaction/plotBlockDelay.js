@@ -35,7 +35,7 @@ for (var key in rawData) {
 var data = [trace1, trace2, trace3]
 const layout = {
   title: {
-    text: 'Blovk Delay',
+    text: 'Block Delay',
     xref: 'paper',
     x: 0.05,
   },
