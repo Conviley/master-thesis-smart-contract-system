@@ -41,6 +41,12 @@ contract DeRail is ChainlinkClient{
         _;
     }
 
+    modifier nonBookedPassenger(uint256 key) {
+        require(trips[key].passengers[msg.sender] == 0, "Passenger already booked");
+        require(msg.value == trips[key].price, "User did not pay the exact price of the trip");
+        _;
+    }
+
     // ROP = Ropsten network, CL = Chainlink node, DH = Daniel's node
     address private constant ROP_CL_ADDR_ORACLE = 0xc99B3D447826532722E41bc36e644ba3479E4365;
     address private constant ROP_DH_ADDR_ORACLE = 0x7b64ED98259D2A7C520aAAa92D55D3887A2A2d9c;
@@ -136,7 +142,7 @@ contract DeRail is ChainlinkClient{
     }
 
     function createMockTrip() external restricted{
-        createTrip("cst", "nr", "2020-02-18", 545, 0, 1);
+        createTrip("cst", "nr", "2020-02-18", 545, 1, 1);
     }
 
     function createTrip(
@@ -186,9 +192,8 @@ contract DeRail is ChainlinkClient{
     //////////////////// INTERACTION FUNCTIONS FOR PASSENGERS ///////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////
 
-    function bookTrip(uint256 key) external payable requireTrip(key){
+    function bookTrip(uint256 key) external payable requireTrip(key) nonBookedPassenger(key){
         Trip storage trip = trips[key];
-        require(msg.value == trip.price, "User did not pay the exact price of the trip");
         trip.passengers[msg.sender] = trip.price;
         trip.passengerCount++;
         emit LogNewTripPassenger(msg.sender, key, trip.price);

@@ -2,7 +2,7 @@ const web3 = require('./web3.js')
 const instance = require('./factory.js')
 const outputResults = require('./outputResults.js')
 
-var TRANSACTIONS = 1
+var TRANSACTIONS = 5
 var OUTPUT_FILE_PATH = './testSubmissionData.json'
 var testSubmission = true
 var tripKey = 1
@@ -18,21 +18,37 @@ async function multipleTx() {
       testSubmission = process.argv[4] == 'true'
     }
   }
-  console.log(process.argv)
   console.log(tripKey, OUTPUT_FILE_PATH, testSubmission)
 
   let accounts = await web3.eth.getAccounts()
-  console.log('Issuing Transactions...')
+  if (!testSubmission) {
+    console.log('creating Mock Trip...')
+    try {
+      await instance.methods.createMockTrip().send({
+        from: accounts[0],
+        gasPrice: 2000000000,
+      })
+      tripKey = (await instance.methods.getTripKey().call()) - 1
+      console.log('created new trip setting trip key to', tripKey)
+    } catch (err) {
+      console.log('Failed to create new mock trip!', err)
+      process.exit(1)
+    }
+  }
+  if (testSubmission) {
+    console.log('Issuing addSubmission Transactions...')
+  } else {
+    console.log('Issuing bookTrip Transactions...')
+  }
+
   let totalGasUsed = 0
   const promisesArr = []
   const sendBlockNumber = await web3.eth.getBlockNumber()
   const sendTimeStamp = Date.now()
 
   for (let i = 0; i < TRANSACTIONS; i++) {
-    console.log('account', i, 'is', accounts[i])
     let promise = ''
     if (testSubmission) {
-      console.log('Adding submission promise')
       promise = instance.methods
         .addSubmissionNoCheck(tripKey, 1587473091)
         .send({
@@ -40,11 +56,10 @@ async function multipleTx() {
           gasPrice: 2000000000,
         })
     } else {
-      console.log('Adding booking promise')
       promise = instance.methods.bookTrip(tripKey).send({
         from: accounts[i],
         gasPrice: 2000000000,
-        value: web3.utils.toWei('0'),
+        value: 1,
       })
     }
     promisesArr.push(promise)
@@ -69,6 +84,7 @@ async function multipleTx() {
     })
     .catch((error) => {
       console.log('multipleTX():', error)
+      process.exit(1)
     })
 }
 
@@ -80,7 +96,7 @@ async function test(n) {
   }
 }
 
-test(1).then((_) => {
+test(4).then((_) => {
   console.log('Test Finished!')
   process.exit(0)
 })

@@ -9,7 +9,8 @@ async function createTrip() {
       from: accounts[0],
       gasPrice: 2000000000,
     })
-    console.log('Sucess!')
+    const tripKey = (await instance.methods.getTripKey().call()) - 1
+    console.log('Sucess!', tripKey)
   } catch (err) {
     console.log(err)
   }
