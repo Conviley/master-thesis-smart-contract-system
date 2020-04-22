@@ -1,5 +1,5 @@
 const plotlib = require('nodeplotlib')
-const OUTPUT_FILE_PATH = './rawData.json'
+const OUTPUT_FILE_PATH = process.argv[2]
 const rawData = require(OUTPUT_FILE_PATH)
 
 var trace1 = {
