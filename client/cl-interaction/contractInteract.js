@@ -1,11 +1,26 @@
-var TRANSACTIONS = 1
-const OUTPUT_FILE_PATH = './rawData.json'
-
 const web3 = require('./web3.js')
 const instance = require('./factory.js')
 const outputResults = require('./outputResults.js')
 
+var TRANSACTIONS = 1
+var OUTPUT_FILE_PATH = './testSubmissionData.json'
+var testSubmission = true
+var tripKey = 1
+
 async function multipleTx() {
+  let argvLength = process.argv.length
+  if (argvLength > 2) {
+    tripKey = parseInt(process.argv[2])
+    if (argvLength > 3) {
+      OUTPUT_FILE_PATH = process.argv[3]
+    }
+    if (argvLength > 4) {
+      testSubmission = process.argv[4] == 'true'
+    }
+  }
+  console.log(process.argv)
+  console.log(tripKey, OUTPUT_FILE_PATH, testSubmission)
+
   let accounts = await web3.eth.getAccounts()
   console.log('Issuing Transactions...')
   let totalGasUsed = 0
@@ -15,13 +30,24 @@ async function multipleTx() {
 
   for (let i = 0; i < TRANSACTIONS; i++) {
     console.log('account', i, 'is', accounts[i])
-    promisesArr.push(
-      instance.methods.addSubmissionNoCheck(3, 1587473091).send({
+    let promise = ''
+    if (testSubmission) {
+      console.log('Adding submission promise')
+      promise = instance.methods
+        .addSubmissionNoCheck(tripKey, 1587473091)
+        .send({
+          from: accounts[i],
+          gasPrice: 2000000000,
+        })
+    } else {
+      console.log('Adding booking promise')
+      promise = instance.methods.bookTrip(tripKey).send({
         from: accounts[i],
-
         gasPrice: 2000000000,
+        value: web3.utils.toWei('0'),
       })
-    )
+    }
+    promisesArr.push(promise)
   }
 
   await Promise.all(promisesArr)
