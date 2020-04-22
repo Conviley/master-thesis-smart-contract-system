@@ -1,119 +1,12 @@
-var TRANSACTIONS = 21
-const OUTPUT_FILE_PATH = './rawData.json'
-
-const HDWalletProvider = require('../../node_modules/@truffle/hdwallet-provider')
-const Web3 = require('web3')
 const fs = require('fs-extra')
-
-const DeRail = require('../../build/contracts/DeRail.json')
-const address = require('../../address.json')
-const infura = require('../../infura.json')
-
-const mnemonic = fs
-  .readFileSync('../../.secret')
-  .toString()
-  .trim()
-const walletprovider = new HDWalletProvider(mnemonic, infura.endpoint, 0, 100)
-
-const web3 = new Web3(walletprovider)
-const instance = new web3.eth.Contract(DeRail.abi, address.address, {
-  gasPrice: '20000000000',
-})
-
-async function fundAccounts(accountsAmount, etherAmount) {
-  let accounts = await web3.eth.getAccounts()
-  const amountToSend = web3.utils.toWei(etherAmount)
-  const transactions = []
-  for (var i = 0; i < accountsAmount; i++) {
-    transactions.push(
-      web3.eth.sendTransaction({
-        from: accounts[0],
-        to: accounts[i],
-        value: amountToSend,
-      })
-    )
-  }
-  console.log(
-    'Funding the first',
-    accountsAmount,
-    'accounts with',
-    etherAmount,
-    'ether...'
-  )
-  Promise.all(transactions)
-    .then((receipts) => {
-      console.log(
-        'Success!',
-        TRANSACTIONS,
-        'accounts funded with',
-        etherAmount,
-        'ether'
-      )
-      getBalances()
-    })
-    .catch((error) => {
-      console.log(error)
-    })
-}
-
-async function getBalances() {
-  let accounts = await web3.eth.getAccounts()
-  transactions = []
-  accounts.forEach((acc) => {
-    transactions.push(web3.eth.getBalance(acc))
-  })
-
-  Promise.all(transactions).then((balances) => {
-    balances.forEach((balance) => {
-      console.log(balance)
-    })
-
-    process.exit()
-  })
-}
-
-async function multipleTx() {
-  let accounts = await web3.eth.getAccounts()
-  console.log('Issuing Transactions...')
-  let totalGasUsed = 0
-  const promisesArr = []
-  const sendBlockNumber = await web3.eth.getBlockNumber()
-  const sendTimeStamp = Date.now()
-
-  for (let i = 0; i < TRANSACTIONS; i++) {
-    console.log('account', i, 'is', accounts[i])
-    promisesArr.push(
-      instance.methods.addSubmission(139, 1).send({
-        from: accounts[i],
-        gasPrice: 10000000000,
-      })
-    )
-  }
-  await Promise.all(promisesArr)
-    .then(async (receipts) => {
-      let lastBlock = receipts[0].blockNumber
-      receipts.forEach((receipt) => {
-        totalGasUsed += receipt.gasUsed
-        lastBlock =
-          receipt.blockNumber > lastBlock ? receipt.blockNumber : lastBlock
-      })
-      await outputResults(
-        sendTimeStamp,
-        totalGasUsed,
-        sendBlockNumber,
-        lastBlock
-      )
-    })
-    .catch((error) => {
-      console.log('multipleTX():', error)
-    })
-}
 
 async function outputResults(
   sendTimeStamp,
   totalGasUsed,
   sendBlockNumber,
-  lastBlock
+  lastBlock,
+  OUTPUT_FILE_PATH,
+  TRANSACTIONS
 ) {
   let outputFile = {}
   try {
@@ -122,7 +15,8 @@ async function outputResults(
       sendTimeStamp,
       totalGasUsed,
       sendBlockNumber,
-      lastBlock
+      lastBlock,
+      TRANSACTIONS
     )
 
     if (fs.existsSync(OUTPUT_FILE_PATH)) {
@@ -155,7 +49,8 @@ function createTransactionReceipt(
   sendTimeStamp,
   totalGasUsed,
   sendBlockNumber,
-  lastBlock
+  lastBlock,
+  TRANSACTIONS
 ) {
   return {
     numberOfTransactions: TRANSACTIONS,
@@ -209,17 +104,4 @@ function updateDataPointValues(jsonKey, entry) {
   }
 }
 
-async function test(n) {
-  let transactionMultiplier = TRANSACTIONS
-  for (let i = 1; i < n + 1; i++) {
-    TRANSACTIONS = transactionMultiplier * i
-    await multipleTx()
-  }
-}
-
-test(1).then((_) => {
-  console.log('Test Finished!')
-  process.exit(0)
-})
-//getBalances()
-//fundAccounts(100, '0.01')
+module.exports = outputResults
