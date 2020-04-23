@@ -9,6 +9,7 @@
   "dependencies": {
     "@chainlink/contracts": "^0.0.3",
     "@chainlink/test-helpers": "0.0.2",
+    "@truffle/hdwallet-provider": "^1.0.34",
     "solc": "^0.5.1",
     "truffle-hdwallet-provider": "^1.0.17"
   },
