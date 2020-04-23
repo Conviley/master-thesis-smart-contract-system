@@ -2,7 +2,9 @@ const web3 = require('./web3.js')
 const instance = require('./factory.js')
 const outputResults = require('./outputResults.js')
 
-var TRANSACTIONS = 5
+const GAS_PRICE = 2000000000
+
+var TRANSACTIONS = 1
 var OUTPUT_FILE_PATH = './testSubmissionData.json'
 var testSubmission = true
 var tripKey = 1
@@ -26,7 +28,7 @@ async function multipleTx() {
     try {
       await instance.methods.createMockTrip().send({
         from: accounts[0],
-        gasPrice: 2000000000,
+        gasPrice: GAS_PRICE,
       })
       tripKey = (await instance.methods.getTripKey().call()) - 1
       console.log('created new trip setting trip key to', tripKey)
@@ -53,12 +55,12 @@ async function multipleTx() {
         .addSubmissionNoCheck(tripKey, 1587473091)
         .send({
           from: accounts[i],
-          gasPrice: 2000000000,
+          gasPrice: GAS_PRICE,
         })
     } else {
       promise = instance.methods.bookTrip(tripKey).send({
         from: accounts[i],
-        gasPrice: 2000000000,
+        gasPrice: GAS_PRICE,
         value: 1,
       })
     }
@@ -96,7 +98,7 @@ async function test(n) {
   }
 }
 
-test(4).then((_) => {
+test(1).then((_) => {
   console.log('Test Finished!')
   process.exit(0)
 })
