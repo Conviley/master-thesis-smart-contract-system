@@ -35,7 +35,7 @@ async function outputResults(
         outputFile[jsonKey] = createNewEntry(transactionReceipt)
       }
     } else {
-      console.log(OUTPUT_FILE_PATH, 'Did not exist')
+      console.log(OUTPUT_FILE_PATH, 'Did not exist, creating it')
       outputFile[jsonKey] = createNewEntry(transactionReceipt)
     }
     await fs.writeJson(OUTPUT_FILE_PATH, outputFile)
