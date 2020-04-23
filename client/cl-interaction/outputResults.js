@@ -1,7 +1,7 @@
 const fs = require('fs-extra')
 
 async function outputResults(
-  sendTimeStamp,
+  txElapsedTime,
   totalGasUsed,
   sendBlockNumber,
   lastBlock,
@@ -12,7 +12,7 @@ async function outputResults(
   try {
     const jsonKey = TRANSACTIONS.toString()
     const transactionReceipt = createTransactionReceipt(
-      sendTimeStamp,
+      txElapsedTime,
       totalGasUsed,
       sendBlockNumber,
       lastBlock,
@@ -46,7 +46,7 @@ async function outputResults(
 }
 
 function createTransactionReceipt(
-  sendTimeStamp,
+  txElapsedTime,
   totalGasUsed,
   sendBlockNumber,
   lastBlock,
@@ -54,7 +54,7 @@ function createTransactionReceipt(
 ) {
   return {
     numberOfTransactions: TRANSACTIONS,
-    elapsedTime: (Date.now() - sendTimeStamp) / 1000,
+    elapsedTime: txElapsedTime / 1000,
     gasUsed: totalGasUsed,
     blockDelay: lastBlock - sendBlockNumber,
   }

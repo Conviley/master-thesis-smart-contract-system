@@ -46,7 +46,8 @@ async function multipleTx() {
   let totalGasUsed = 0
   const promisesArr = []
   const sendBlockNumber = await web3.eth.getBlockNumber()
-  const sendTimeStamp = Date.now()
+  const txStartTime = Date.now()
+  let txEndTime = 0
 
   for (let i = 0; i < TRANSACTIONS; i++) {
     let promise = ''
@@ -69,6 +70,7 @@ async function multipleTx() {
 
   await Promise.all(promisesArr)
     .then(async (receipts) => {
+      let txElapsedTime = Date.now() - txStartTime
       let lastBlock = receipts[0].blockNumber
       receipts.forEach((receipt) => {
         totalGasUsed += receipt.gasUsed
@@ -76,7 +78,7 @@ async function multipleTx() {
           receipt.blockNumber > lastBlock ? receipt.blockNumber : lastBlock
       })
       await outputResults(
-        sendTimeStamp,
+        txElapsedTime,
         totalGasUsed,
         sendBlockNumber,
         lastBlock,
