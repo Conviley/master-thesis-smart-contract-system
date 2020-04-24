@@ -2,26 +2,14 @@ const web3 = require('./web3.js')
 const instance = require('./factory.js')
 const outputResults = require('./outputResults.js')
 
-const GAS_PRICE = 2000000000
-
-var TRANSACTIONS = 1
-var OUTPUT_FILE_PATH = './testSubmissionData.json'
-var testSubmission = true
-var tripKey = 1
-
-async function multipleTx() {
-  let argvLength = process.argv.length
-  if (argvLength > 2) {
-    tripKey = parseInt(process.argv[2])
-    if (argvLength > 3) {
-      OUTPUT_FILE_PATH = process.argv[3]
-    }
-    if (argvLength > 4) {
-      testSubmission = process.argv[4] == 'true'
-    }
-  }
-  console.log(tripKey, OUTPUT_FILE_PATH, testSubmission)
-
+async function multipleTx(
+  TRANSACTIONS,
+  GAS_PRICE,
+  tripKey,
+  testSubmission,
+  OUTPUT_FILE_PATH,
+  OUTPUT_AGGEGAGATION_FILE_PATH
+) {
   let accounts = await web3.eth.getAccounts()
   if (!testSubmission) {
     console.log('creating Mock Trip...')
@@ -47,7 +35,6 @@ async function multipleTx() {
   const promisesArr = []
   const sendBlockNumber = await web3.eth.getBlockNumber()
   const txStartTime = Date.now()
-  let txEndTime = 0
 
   for (let i = 0; i < TRANSACTIONS; i++) {
     let promise = ''
@@ -90,17 +77,29 @@ async function multipleTx() {
       console.log('multipleTX():', error)
       process.exit(1)
     })
-}
 
-async function test(n) {
-  let transactionMultiplier = TRANSACTIONS
-  for (let i = 1; i < n + 1; i++) {
-    TRANSACTIONS = transactionMultiplier * i
-    await multipleTx()
+  if (testSubmission) {
+    console.log('Aggregating TAL...')
+    const aggStartBlockNumber = await web3.eth.getBlockNumber()
+    let aggregateStartTime = Date.now()
+
+    const aggregationReceipt = await instance.methods
+      .updateTALMedian(tripKey)
+      .send({
+        from: accounts[0],
+        gasPrice: GAS_PRICE,
+      })
+    let aggregateElapsedTime = Date.now() - aggregateStartTime
+    console.log('Aggregation Finished!')
+    await outputResults(
+      aggregateElapsedTime,
+      aggregationReceipt.gasUsed,
+      aggStartBlockNumber,
+      aggregationReceipt.blockNumber,
+      OUTPUT_AGGEGAGATION_FILE_PATH,
+      TRANSACTIONS
+    )
   }
 }
 
-test(1).then((_) => {
-  console.log('Test Finished!')
-  process.exit(0)
-})
+module.exports = multipleTx

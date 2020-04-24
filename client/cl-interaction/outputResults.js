@@ -24,7 +24,7 @@ async function outputResults(
 
       if (outputFile[jsonKey]) {
         outputFile[jsonKey]['transactions'].push(transactionReceipt)
-        updateDataPointValues(outputFile[jsonKey])
+        updateEntryValues(outputFile[jsonKey])
       } else {
         outputFile[jsonKey] = createNewEntry(transactionReceipt)
       }
@@ -67,7 +67,7 @@ function createNewEntry(transactionReceipt) {
   }
 }
 
-function updateDataPointValues(entry) {
+function updateEntryValues(entry) {
   let sumTimes = 0
   let sumBlockDelay = 0
   let newTransaction = entry['transactions'][entry['transactions'].length - 1]
@@ -77,7 +77,7 @@ function updateDataPointValues(entry) {
   } else if (newTransaction.elapsedTime > entry.maxElapsedTime) {
     entry.maxElapsedTime = newTransaction.elapsedTime
   }
-
+  // POSSIBLE TODO: ADD MEDIAN CALCULATION AS WELL
   entry['transactions'].forEach((tx) => {
     sumTimes += tx.elapsedTime
     sumBlockDelay += tx.blockDelay
