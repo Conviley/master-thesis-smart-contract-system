@@ -24,13 +24,7 @@ async function outputResults(
 
       if (outputFile[jsonKey]) {
         outputFile[jsonKey]['transactions'].push(transactionReceipt)
-        newValues = updateDataPointValues(jsonKey, outputFile[jsonKey])
-        outputFile[jsonKey].minElapsedTime = newValues.minElapsedTime
-        outputFile[jsonKey].avgElapsedTime = newValues.avgElapsedTime
-        outputFile[jsonKey].maxElapsedTime = newValues.maxElapsedTime
-        outputFile[jsonKey].minBlockDelay = newValues.minBlockDelay
-        outputFile[jsonKey].avgBlockDelay = newValues.avgBlockDelay
-        outputFile[jsonKey].maxBlockDelay = newValues.maxBlockDelay
+        updateDataPointValues(outputFile[jsonKey])
       } else {
         outputFile[jsonKey] = createNewEntry(transactionReceipt)
       }
@@ -56,6 +50,7 @@ function createTransactionReceipt(
     numberOfTransactions: TRANSACTIONS,
     elapsedTime: txElapsedTime / 1000,
     gasUsed: totalGasUsed,
+    lastBlock: lastBlock,
     blockDelay: lastBlock - sendBlockNumber,
   }
 }
@@ -72,36 +67,25 @@ function createNewEntry(transactionReceipt) {
   }
 }
 
-function updateDataPointValues(jsonKey, entry) {
-  let minTime = entry.maxElapsedTime
-  let minBlockDelay = entry.maxBlockDelay
-  let maxTime = entry.minElapsedTime
-  let maxBlockDelay = entry.minBlockDelay
+function updateDataPointValues(entry) {
   let sumTimes = 0
   let sumBlockDelay = 0
+  let newTransaction = entry['transactions'][entry['transactions'].length - 1]
+
+  if (newTransaction.elapsedTime < entry.minElapsedTime) {
+    entry.minElapsedTime = newTransaction.elapsedTime
+  } else if (newTransaction.elapsedTime > entry.maxElapsedTime) {
+    entry.maxElapsedTime = newTransaction.elapsedTime
+  }
+
   entry['transactions'].forEach((tx) => {
-    minTime = tx.elapsedTime < minTime ? tx.elapsedTime : minTime
-    minBlockDelay =
-      tx.blockDelay < minBlockDelay ? tx.blockDelay : minBlockDelay
-    maxTime = tx.elapsedTime > maxTime ? tx.elapsedTime : maxTime
-    maxBlockDelay =
-      tx.blockDelay > maxBlockDelay ? tx.blockDelay : maxBlockDelay
     sumTimes += tx.elapsedTime
     sumBlockDelay += tx.blockDelay
   })
 
   let submissions = entry['transactions'].length
-  let avgTime = sumTimes / submissions
-  let avgBlockDelay = sumBlockDelay / submissions
-
-  return {
-    minElapsedTime: minTime,
-    avgElapsedTime: avgTime,
-    maxElapsedTime: maxTime,
-    minBlockDelay: minBlockDelay,
-    avgBlockDelay: avgBlockDelay,
-    maxBlockDelay: maxBlockDelay,
-  }
+  entry.avgElapsedTime = sumTimes / submissions
+  entry.avgBlockDelay = sumBlockDelay / submissions
 }
 
 module.exports = outputResults
