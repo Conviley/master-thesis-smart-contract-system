@@ -4,14 +4,13 @@ const plotBlockDelay = require('./plotBlockDelay.js')
 const plotTimeElapsed = require('./plotTimeElapsed.js')
 const plotGasUsage = require('./plotGasUsage.js')
 /**
+ * TODO UPDATE DESCRIPTION ACCORDING TO TESTING METHODOLOGY
  * This profile tests submissions and aggregation.
  * Start at 10 transactions and increment by 10 until 100 transactions
  */
 const BASE_TRANSACTIONS = 1
 const BASE_GAS_PRICE = 2000000000
 const BATCHES = 5
-
-const TRIP_KEY = 1
 
 const BOOKINGS_OUTPUT_FILE_PATH = './p1Booking.json'
 const SUBMISSIONS_OUTPUT_FILE_PATH = './p1Submissions.json'
