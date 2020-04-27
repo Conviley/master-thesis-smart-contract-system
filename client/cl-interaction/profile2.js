@@ -1,11 +1,14 @@
 const multipleTx = require('./contractInteract.js')
+const plotBlockDelay = require('./plotBlockDelay.js')
+const plotTimeElapsed = require('./plotTimeElapsed.js')
+const plotGasUsage = require('./plotGasUsage.js')
 /**
  * This profile tests booking.
  * Start at 10 transactions and increment by 10 until 100 transactions
  */
-const BASE_TRANSACTIONS = 10
+const BASE_TRANSACTIONS = 1
 const BASE_GAS_PRICE = 2000000000
-const BATCHES = 2
+const BATCHES = 1
 
 const TRIP_KEY = 'NOT_USED'
 const TEST_SUBMISSION = false
@@ -30,6 +33,9 @@ async function test(n) {
 }
 
 test(BATCHES).then((_) => {
+  plotBlockDelay('./p2.json', 'Block Delay - bookTrip()')
+  plotTimeElapsed('./p2.json', 'Time Elapsed - bookTrip()')
+  plotGasUsage('./p2.json', 'GAS Usage - bookTrip()')
   console.log('Test Finished!')
-  process.exit(0)
+  //process.exit(0)
 })

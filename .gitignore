@@ -7,4 +7,4 @@ address.json
 infura.json
 build
 client/cl-interaction/*.json
-testingZone.json
+testingZone.js
