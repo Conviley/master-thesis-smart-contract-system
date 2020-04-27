@@ -5,22 +5,22 @@ async function outputResults(
   totalGasUsed,
   sendBlockNumber,
   lastBlock,
-  OUTPUT_FILE_PATH,
-  TRANSACTIONS
+  outputFilePath,
+  transactions
 ) {
   let outputFile = {}
   try {
-    const jsonKey = TRANSACTIONS.toString()
+    const jsonKey = transactions.toString()
     const transactionReceipt = createTransactionReceipt(
       txElapsedTime,
       totalGasUsed,
       sendBlockNumber,
       lastBlock,
-      TRANSACTIONS
+      transactions
     )
 
-    if (fs.existsSync(OUTPUT_FILE_PATH)) {
-      outputFile = await fs.readJson(OUTPUT_FILE_PATH)
+    if (fs.existsSync(outputFilePath)) {
+      outputFile = await fs.readJson(outputFilePath)
 
       if (outputFile[jsonKey]) {
         outputFile[jsonKey]['transactions'].push(transactionReceipt)
@@ -29,11 +29,11 @@ async function outputResults(
         outputFile[jsonKey] = createNewEntry(transactionReceipt)
       }
     } else {
-      console.log(OUTPUT_FILE_PATH, 'Did not exist, creating it')
+      console.log(outputFilePath, 'Did not exist, creating it')
       outputFile[jsonKey] = createNewEntry(transactionReceipt)
     }
-    await fs.writeJson(OUTPUT_FILE_PATH, outputFile)
-    console.log('Success! Result written to:', OUTPUT_FILE_PATH)
+    await fs.writeJson(outputFilePath, outputFile)
+    console.log('Success! Result written to:', outputFilePath)
   } catch (err) {
     console.log('outputResults():', err)
   }
@@ -44,10 +44,10 @@ function createTransactionReceipt(
   totalGasUsed,
   sendBlockNumber,
   lastBlock,
-  TRANSACTIONS
+  transactions
 ) {
   return {
-    numberOfTransactions: TRANSACTIONS,
+    numberOfTransactions: transactions,
     elapsedTime: txElapsedTime / 1000,
     gasUsed: totalGasUsed,
     lastBlock: lastBlock,
@@ -77,6 +77,12 @@ function updateEntryValues(entry) {
   } else if (newTransaction.elapsedTime > entry.maxElapsedTime) {
     entry.maxElapsedTime = newTransaction.elapsedTime
   }
+
+  if (newTransaction.blockDelay < entry.minBlockDelay) {
+    entry.minBlockDelay = newTransaction.blockDelay
+  } else if (newTransaction.blockDelay > entry.maxBlockDelay) {
+    entry.maxBlockDelay = newTransaction.blockDelay
+  }
   // POSSIBLE TODO: ADD MEDIAN CALCULATION AS WELL
   entry['transactions'].forEach((tx) => {
     sumTimes += tx.elapsedTime
@@ -88,4 +94,7 @@ function updateEntryValues(entry) {
   entry.avgBlockDelay = sumBlockDelay / submissions
 }
 
-module.exports = outputResults
+module.exports = {
+  outputResults: outputResults,
+  updateEntryValues: updateEntryValues,
+}
