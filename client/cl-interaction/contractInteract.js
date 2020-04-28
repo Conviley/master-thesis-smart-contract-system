@@ -33,26 +33,44 @@ async function multipleTx(
       gasPrice: GAS_PRICE,
       value: 1,
     })
+
     bookingPromiseArr.push(promise)
-    promise = instance.methods.addSubmission(tripKey, Date.now() / 1000).send({
-      from: accounts[i],
-      gasPrice: GAS_PRICE,
-    })
+
+    promise = instance.methods
+      .addSubmission(tripKey, Math.round(Date.now() / 1000))
+      .send({
+        from: accounts[i],
+        gasPrice: GAS_PRICE,
+      })
+
     submissionPromiseArray.push(promise)
   }
   console.log('issuing booking transactions...')
-  let sendBlockNumber = await web3.eth.getBlockNumber()
-  let txStartTime = Date.now()
-  let executionMetrics = await executePromises(bookingPromiseArr, txStartTime)
+  try {
+    var sendBlockNumber = await web3.eth.getBlockNumber()
+  } catch (err) {
+    console.log("COULDN'T GET BLOCK NUMBER")
+  }
 
-  await outputResults(
-    executionMetrics.txElapsedTime,
-    executionMetrics.totalGasUsed,
-    sendBlockNumber,
-    executionMetrics.lastBlock,
-    BOOKINGS_OUTPUT_FILE_PATH,
-    TRANSACTIONS
-  )
+  let txStartTime = Date.now()
+  let executionMetrics = ''
+  try {
+    executionMetrics = await executePromises(bookingPromiseArr, txStartTime)
+  } catch (err) {
+    console.log('EXECUTIONG BOOKING ERROR', err)
+  }
+  try {
+    await outputResults(
+      executionMetrics.txElapsedTime,
+      executionMetrics.totalGasUsed,
+      sendBlockNumber,
+      executionMetrics.lastBlock,
+      BOOKINGS_OUTPUT_FILE_PATH,
+      TRANSACTIONS
+    )
+  } catch (err) {
+    console.log('OUTPUT RESULT', err)
+  }
 
   console.log('issuing addSubmission transactions...')
   sendBlockNumber = await web3.eth.getBlockNumber()
@@ -92,8 +110,9 @@ async function multipleTx(
 }
 
 async function executePromises(promisesArr, txStartTime) {
+  console.log('Entering executiePromises')
   await Promise.all(promisesArr)
-    .then(async (receipts) => {
+    .then((receipts) => {
       let totalGasUsed = 0
       let txElapsedTime = Date.now() - txStartTime
       let lastBlock = receipts[receipts.length - 1].blockNumber
@@ -102,7 +121,7 @@ async function executePromises(promisesArr, txStartTime) {
         lastBlock =
           receipt.blockNumber > lastBlock ? receipt.blockNumber : lastBlock
       })
-
+      console.log('executiePromises before return')
       return {
         txElapsedTime: txElapsedTime,
         totalGasUsed: totalGasUsed,
