@@ -42,7 +42,7 @@ async function mergeJson(inputPath1, inputPath2, outputFilePath) {
 }
 
 if (require.main === module) {
-  mergeJson('./p1Submissions.json', 'p1Aggregations.json', 'testMerge.json')
+  mergeJson('./p1Submissions.json', './p1Aggregations.json', './testMerge.json')
 } else {
   module.exports = mergeJson
 }
