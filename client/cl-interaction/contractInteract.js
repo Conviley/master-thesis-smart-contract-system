@@ -24,8 +24,9 @@ async function multipleTx(
     process.exit(1)
   }
 
-  const submissionPromiseArray = []
-  const bookingPromiseArr = []
+  var sendBlockNumber = await web3.eth.getBlockNumber()
+  let bookingPromiseArr = []
+  let txStartTime = Date.now()
   for (let i = 0; i < TRANSACTIONS; i++) {
     let promise = ''
     promise = instance.methods.bookTrip(tripKey).send({
@@ -35,48 +36,34 @@ async function multipleTx(
     })
 
     bookingPromiseArr.push(promise)
+  }
+  console.log('issuing booking transactions...')
+  var executionMetrics = ''
+  executionMetrics = await executePromises(bookingPromiseArr, txStartTime)
+  await outputResults(
+    executionMetrics.txElapsedTime,
+    executionMetrics.totalGasUsed,
+    sendBlockNumber,
+    executionMetrics.lastBlock,
+    BOOKINGS_OUTPUT_FILE_PATH,
+    TRANSACTIONS
+  )
 
-    promise = instance.methods
+  console.log('issuing addSubmission transactions...')
+  sendBlockNumber = await web3.eth.getBlockNumber()
+  let submissionPromiseArr = []
+  txStartTime = Date.now()
+  for (let i = 0; i < TRANSACTIONS; i++) {
+    let promise = instance.methods
       .addSubmission(tripKey, Math.round(Date.now() / 1000))
       .send({
         from: accounts[i],
         gasPrice: GAS_PRICE,
       })
 
-    submissionPromiseArray.push(promise)
+    submissionPromiseArr.push(promise)
   }
-  console.log('issuing booking transactions...')
-  try {
-    var sendBlockNumber = await web3.eth.getBlockNumber()
-  } catch (err) {
-    console.log("COULDN'T GET BLOCK NUMBER")
-  }
-
-  let txStartTime = Date.now()
-  let executionMetrics = ''
-  try {
-    executionMetrics = await executePromises(bookingPromiseArr, txStartTime)
-  } catch (err) {
-    console.log('EXECUTIONG BOOKING ERROR', err)
-  }
-  try {
-    await outputResults(
-      executionMetrics.txElapsedTime,
-      executionMetrics.totalGasUsed,
-      sendBlockNumber,
-      executionMetrics.lastBlock,
-      BOOKINGS_OUTPUT_FILE_PATH,
-      TRANSACTIONS
-    )
-  } catch (err) {
-    console.log('OUTPUT RESULT', err)
-  }
-
-  console.log('issuing addSubmission transactions...')
-  sendBlockNumber = await web3.eth.getBlockNumber()
-  txStartTime = Date.now()
   executionMetrics = await executePromises(submissionPromiseArr, txStartTime)
-
   await outputResults(
     executionMetrics.txElapsedTime,
     executionMetrics.totalGasUsed,
@@ -89,7 +76,6 @@ async function multipleTx(
   console.log('Aggregating TAL...')
   sendBlockNumber = await web3.eth.getBlockNumber()
   txStartTime = Date.now()
-  executionMetrics = await executePromises(submissionPromiseArr, txStartTime)
   const aggregationReceipt = await instance.methods
     .updateTALMedian(tripKey)
     .send({
@@ -97,8 +83,7 @@ async function multipleTx(
       gasPrice: GAS_PRICE,
     })
 
-  let aggregateElapsedTime = Date.now() - aggregateStartTime
-  console.log('Aggregation Finished!')
+  let aggregateElapsedTime = Date.now() - txStartTime
   await outputResults(
     aggregateElapsedTime,
     aggregationReceipt.gasUsed,
@@ -110,18 +95,19 @@ async function multipleTx(
 }
 
 async function executePromises(promisesArr, txStartTime) {
-  console.log('Entering executiePromises')
-  await Promise.all(promisesArr)
+  let totalGasUsed = 0
+  let txElapsedTime = 0
+  let lastBlock = 0
+
+  let res = await Promise.all(promisesArr)
     .then((receipts) => {
-      let totalGasUsed = 0
-      let txElapsedTime = Date.now() - txStartTime
-      let lastBlock = receipts[receipts.length - 1].blockNumber
+      txElapsedTime = Date.now() - txStartTime
+      lastBlock = receipts[receipts.length - 1].blockNumber
       receipts.forEach((receipt) => {
         totalGasUsed += receipt.gasUsed
         lastBlock =
           receipt.blockNumber > lastBlock ? receipt.blockNumber : lastBlock
       })
-      console.log('executiePromises before return')
       return {
         txElapsedTime: txElapsedTime,
         totalGasUsed: totalGasUsed,
@@ -129,9 +115,10 @@ async function executePromises(promisesArr, txStartTime) {
       }
     })
     .catch((error) => {
-      console.log('multipleTX():', error)
+      console.log('executePromises():', error)
       process.exit(1)
     })
+  return res
 }
 
 module.exports = multipleTx

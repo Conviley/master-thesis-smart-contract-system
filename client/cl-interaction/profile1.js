@@ -10,7 +10,7 @@ const plotGasUsage = require('./plotGasUsage.js')
  */
 const BASE_TRANSACTIONS = 1
 const BASE_GAS_PRICE = 2000000000
-const BATCHES = 5
+const BATCHES = 10
 
 const BOOKINGS_OUTPUT_FILE_PATH = './p1Booking.json'
 const SUBMISSIONS_OUTPUT_FILE_PATH = './p1Submissions.json'
@@ -21,15 +21,19 @@ async function test(n) {
   let TRANSACTIONS
   let GAS_PRICE
   for (let i = 1; i < n + 1; i++) {
-    TRANSACTIONS = BASE_TRANSACTIONS
+    TRANSACTIONS = BASE_TRANSACTIONS * i
     GAS_PRICE = BASE_GAS_PRICE
-    await multipleTx(
-      TRANSACTIONS,
-      GAS_PRICE,
-      BOOKINGS_OUTPUT_FILE_PATH,
-      SUBMISSIONS_OUTPUT_FILE_PATH,
-      AGGREGATIONS_OUTPUT_FILE_PATH
-    )
+    try {
+      await multipleTx(
+        TRANSACTIONS,
+        GAS_PRICE,
+        BOOKINGS_OUTPUT_FILE_PATH,
+        SUBMISSIONS_OUTPUT_FILE_PATH,
+        AGGREGATIONS_OUTPUT_FILE_PATH
+      )
+    } catch (err) {
+      console.log('profile1.js:', err)
+    }
   }
 }
 

@@ -38,4 +38,4 @@ async function fundAccounts(accountsAmount, etherAmount) {
     })
 }
 
-fundAccounts(2, '0.001')
+fundAccounts(10, '0.001')

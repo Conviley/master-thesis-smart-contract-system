@@ -15,7 +15,7 @@ async function fundMainAccount(accountsAmount) {
       console.log('account:', i, 'skipped')
       continue
     }
-    console.log('Taking funds from account:', i)
+    console.log('Taking', amountToSend, 'WEI from account:', i)
     transactions.push(
       web3.eth.sendTransaction({
         from: accounts[i],
@@ -27,13 +27,7 @@ async function fundMainAccount(accountsAmount) {
 
   await Promise.all(transactions)
     .then((receipts) => {
-      console.log(
-        'Success!',
-        accountsAmount,
-        'accounts funded with',
-        amountToSend,
-        'ether'
-      )
+      console.log('Success!')
       getBalances()
     })
     .catch((error) => {
@@ -42,4 +36,4 @@ async function fundMainAccount(accountsAmount) {
     })
 }
 
-fundMainAccount(100)
+fundMainAccount(99)
