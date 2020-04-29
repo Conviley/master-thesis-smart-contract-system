@@ -1,61 +1,56 @@
 const fs = require('fs-extra')
 
 async function outputResults(
-  sendTimeStamp,
+  txElapsedTime,
   totalGasUsed,
   sendBlockNumber,
   lastBlock,
-  OUTPUT_FILE_PATH,
-  TRANSACTIONS
+  outputFilePath,
+  transactions
 ) {
   let outputFile = {}
   try {
-    const jsonKey = TRANSACTIONS.toString()
+    const jsonKey = transactions.toString()
     const transactionReceipt = createTransactionReceipt(
-      sendTimeStamp,
+      txElapsedTime,
       totalGasUsed,
       sendBlockNumber,
       lastBlock,
-      TRANSACTIONS
+      transactions
     )
 
-    if (fs.existsSync(OUTPUT_FILE_PATH)) {
-      outputFile = await fs.readJson(OUTPUT_FILE_PATH)
+    if (fs.existsSync(outputFilePath)) {
+      outputFile = await fs.readJson(outputFilePath)
 
       if (outputFile[jsonKey]) {
         outputFile[jsonKey]['transactions'].push(transactionReceipt)
-        newValues = updateDataPointValues(jsonKey, outputFile[jsonKey])
-        outputFile[jsonKey].minElapsedTime = newValues.minElapsedTime
-        outputFile[jsonKey].avgElapsedTime = newValues.avgElapsedTime
-        outputFile[jsonKey].maxElapsedTime = newValues.maxElapsedTime
-        outputFile[jsonKey].minBlockDelay = newValues.minBlockDelay
-        outputFile[jsonKey].avgBlockDelay = newValues.avgBlockDelay
-        outputFile[jsonKey].maxBlockDelay = newValues.maxBlockDelay
+        updateEntryValues(outputFile[jsonKey])
       } else {
         outputFile[jsonKey] = createNewEntry(transactionReceipt)
       }
     } else {
-      console.log(OUTPUT_FILE_PATH, 'Did not exist, creating it')
+      console.log(outputFilePath, 'Did not exist, creating it')
       outputFile[jsonKey] = createNewEntry(transactionReceipt)
     }
-    await fs.writeJson(OUTPUT_FILE_PATH, outputFile)
-    console.log('Success! Result written to:', OUTPUT_FILE_PATH)
+    await fs.writeJson(outputFilePath, outputFile)
+    console.log('Success! Result written to:', outputFilePath)
   } catch (err) {
     console.log('outputResults():', err)
   }
 }
 
 function createTransactionReceipt(
-  sendTimeStamp,
+  txElapsedTime,
   totalGasUsed,
   sendBlockNumber,
   lastBlock,
-  TRANSACTIONS
+  transactions
 ) {
   return {
-    numberOfTransactions: TRANSACTIONS,
-    elapsedTime: (Date.now() - sendTimeStamp) / 1000,
+    numberOfTransactions: transactions,
+    elapsedTime: txElapsedTime / 1000,
     gasUsed: totalGasUsed,
+    lastBlock: lastBlock,
     blockDelay: lastBlock - sendBlockNumber,
   }
 }
@@ -72,36 +67,35 @@ function createNewEntry(transactionReceipt) {
   }
 }
 
-function updateDataPointValues(jsonKey, entry) {
-  let minTime = entry.maxElapsedTime
-  let minBlockDelay = entry.maxBlockDelay
-  let maxTime = entry.minElapsedTime
-  let maxBlockDelay = entry.minBlockDelay
+function updateEntryValues(entry) {
   let sumTimes = 0
   let sumBlockDelay = 0
+  let newTransaction = entry['transactions'][entry['transactions'].length - 1]
+
+  // POSSIBLE TODO: ADD MEDIAN CALCULATION AS WELL
   entry['transactions'].forEach((tx) => {
-    minTime = tx.elapsedTime < minTime ? tx.elapsedTime : minTime
-    minBlockDelay =
-      tx.blockDelay < minBlockDelay ? tx.blockDelay : minBlockDelay
-    maxTime = tx.elapsedTime > maxTime ? tx.elapsedTime : maxTime
-    maxBlockDelay =
-      tx.blockDelay > maxBlockDelay ? tx.blockDelay : maxBlockDelay
+    if (tx.elapsedTime < entry.minElapsedTime) {
+      entry.minElapsedTime = tx.elapsedTime
+    } else if (tx.elapsedTime > entry.maxElapsedTime) {
+      entry.maxElapsedTime = tx.elapsedTime
+    }
+
+    if (tx.blockDelay < entry.minBlockDelay) {
+      entry.minBlockDelay = tx.blockDelay
+    } else if (tx.blockDelay > entry.maxBlockDelay) {
+      entry.maxBlockDelay = tx.blockDelay
+    }
+
     sumTimes += tx.elapsedTime
     sumBlockDelay += tx.blockDelay
   })
 
   let submissions = entry['transactions'].length
-  let avgTime = sumTimes / submissions
-  let avgBlockDelay = sumBlockDelay / submissions
-
-  return {
-    minElapsedTime: minTime,
-    avgElapsedTime: avgTime,
-    maxElapsedTime: maxTime,
-    minBlockDelay: minBlockDelay,
-    avgBlockDelay: avgBlockDelay,
-    maxBlockDelay: maxBlockDelay,
-  }
+  entry.avgElapsedTime = sumTimes / submissions
+  entry.avgBlockDelay = sumBlockDelay / submissions
 }
 
-module.exports = outputResults
+module.exports = {
+  outputResults: outputResults,
+  updateEntryValues: updateEntryValues,
+}
