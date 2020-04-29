@@ -8,24 +8,20 @@ const plotGasUsage = require('./plotGasUsage.js')
  * This profile tests submissions and aggregation.
  * Start at 10 transactions and increment by 10 until 100 transactions
  */
-const BASE_TRANSACTIONS = 1
-const BASE_GAS_PRICE = 2000000000
-const BATCHES = 1
 
+const GAS_PRICE = 2000000000
+//const TX_COUNT = [1, 5, 10, 20, 50, 100, 200, 300]
+const TX_COUNT = [1]
 const BOOKINGS_OUTPUT_FILE_PATH = './p1Booking.json'
 const SUBMISSIONS_OUTPUT_FILE_PATH = './p1Submissions.json'
 const AGGREGATIONS_OUTPUT_FILE_PATH = './p1Aggregations.json'
 const OUTPUT_MERGED_FILE_PATH = './p1Merged.json'
 
-async function test(n) {
-  let TRANSACTIONS
-  let GAS_PRICE
-  for (let i = 1; i < n + 1; i++) {
-    TRANSACTIONS = BASE_TRANSACTIONS * i
-    GAS_PRICE = BASE_GAS_PRICE
+async function test() {
+  for (var txCount of TX_COUNT) {
     try {
       await multipleTx(
-        TRANSACTIONS,
+        txCount,
         GAS_PRICE,
         BOOKINGS_OUTPUT_FILE_PATH,
         SUBMISSIONS_OUTPUT_FILE_PATH,
@@ -37,7 +33,7 @@ async function test(n) {
   }
 }
 
-test(BATCHES).then(async (_) => {
+test().then(async (_) => {
   await mergeJson(
     SUBMISSIONS_OUTPUT_FILE_PATH,
     AGGREGATIONS_OUTPUT_FILE_PATH,
