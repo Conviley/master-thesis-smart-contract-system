@@ -42,7 +42,8 @@ async function mergeJson(inputPath1, inputPath2, outputFilePath) {
 }
 
 if (require.main === module) {
-  mergeJson('./p1Submissions.json', './p1Aggregations.json', './testMerge.json')
+  // If running from command line
+  mergeJson(process.argv[2], process.argv[3], process.argv[2])
 } else {
   module.exports = mergeJson
 }
