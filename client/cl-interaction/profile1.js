@@ -10,7 +10,7 @@ const plotGasUsage = require('./plotGasUsage.js')
  */
 const BASE_TRANSACTIONS = 1
 const BASE_GAS_PRICE = 2000000000
-const BATCHES = 10
+const BATCHES = 1
 
 const BOOKINGS_OUTPUT_FILE_PATH = './p1Booking.json'
 const SUBMISSIONS_OUTPUT_FILE_PATH = './p1Submissions.json'

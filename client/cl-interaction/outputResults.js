@@ -72,19 +72,20 @@ function updateEntryValues(entry) {
   let sumBlockDelay = 0
   let newTransaction = entry['transactions'][entry['transactions'].length - 1]
 
-  if (newTransaction.elapsedTime < entry.minElapsedTime) {
-    entry.minElapsedTime = newTransaction.elapsedTime
-  } else if (newTransaction.elapsedTime > entry.maxElapsedTime) {
-    entry.maxElapsedTime = newTransaction.elapsedTime
-  }
-
-  if (newTransaction.blockDelay < entry.minBlockDelay) {
-    entry.minBlockDelay = newTransaction.blockDelay
-  } else if (newTransaction.blockDelay > entry.maxBlockDelay) {
-    entry.maxBlockDelay = newTransaction.blockDelay
-  }
   // POSSIBLE TODO: ADD MEDIAN CALCULATION AS WELL
   entry['transactions'].forEach((tx) => {
+    if (tx.elapsedTime < entry.minElapsedTime) {
+      entry.minElapsedTime = tx.elapsedTime
+    } else if (tx.elapsedTime > entry.maxElapsedTime) {
+      entry.maxElapsedTime = tx.elapsedTime
+    }
+
+    if (tx.blockDelay < entry.minBlockDelay) {
+      entry.minBlockDelay = tx.blockDelay
+    } else if (tx.blockDelay > entry.maxBlockDelay) {
+      entry.maxBlockDelay = tx.blockDelay
+    }
+
     sumTimes += tx.elapsedTime
     sumBlockDelay += tx.blockDelay
   })
