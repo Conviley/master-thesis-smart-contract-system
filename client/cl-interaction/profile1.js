@@ -11,7 +11,7 @@ const plotGasUsage = require('./plotGasUsage.js')
 
 const GAS_PRICE = 2000000000
 //const TX_COUNT = [1, 5, 10, 20, 50, 100, 200, 300]
-const TX_COUNT = [5]
+const TX_COUNT = [1, 2, 3, 4, 5]
 const BOOKINGS_OUTPUT_FILE_PATH = './p1Booking.json'
 const SUBMISSIONS_OUTPUT_FILE_PATH = './p1Submissions.json'
 const AGGREGATIONS_OUTPUT_FILE_PATH = './p1Aggregations.json'

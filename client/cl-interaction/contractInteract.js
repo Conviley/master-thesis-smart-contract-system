@@ -137,7 +137,7 @@ async function executePromises(promisesArr, txStartTime) {
 }
 
 let confirmedBlockNumbers = []
-async function awaitTransactionConfirmed(initTxReceipt, blocksToWait = 3) {
+async function awaitTransactionConfirmed(initTxReceipt, blocksToWait = 0) {
   if (confirmedBlockNumbers.includes(initTxReceipt.blockNumber)) {
     return initTxReceipt
   }
