@@ -6,34 +6,28 @@ function plotTimeElapsed(OUTPUT_FILE_PATH, titleText) {
   var trace1 = {
     x: [],
     y: [],
-    name: 'Min Elapsed Time',
-    type: 'bar',
-  }
+    name: 'Time Used',
+    type: 'box',
+    marker: {
+      color: 'rgb(8,81,156)',
+      outliercolor: 'rgba(219, 64, 82, 0.6)',
+      line: {
+        outliercolor: 'rgba(219, 64, 82, 1.0)',
+        outlierwidth: 2,
+      },
+    },
+    boxpoints: 'suspectedoutliers',
 
-  var trace2 = {
-    x: [],
-    y: [],
-    name: 'Avg Elapsed TIme',
-    type: 'bar',
-  }
-
-  var trace3 = {
-    x: [],
-    y: [],
-    name: 'Max Elapsed Time',
-    type: 'bar',
+    boxmean: true,
   }
 
   for (var key in rawData) {
-    trace1.x.push(key)
-    trace1.y.push(rawData[key].minElapsedTime)
-    trace2.x.push(key)
-    trace2.y.push(rawData[key].avgElapsedTime)
-    trace3.x.push(key)
-    trace3.y.push(rawData[key].maxElapsedTime)
+    rawData[key]['transactions'].forEach((tx) => {
+      trace1.x.push(key)
+      trace1.y.push(tx.elapsedTime)
+    })
   }
-
-  var data = [trace1, trace2, trace3]
+  var data = [trace1]
   const layout = {
     title: {
       text: titleText,
@@ -49,7 +43,9 @@ function plotTimeElapsed(OUTPUT_FILE_PATH, titleText) {
       title: {
         text: 'Seconds[s]',
       },
+      zeroline: false,
     },
+    boxmode: 'group',
   }
   console.log('plotting time elapsed...', OUTPUT_FILE_PATH)
 
