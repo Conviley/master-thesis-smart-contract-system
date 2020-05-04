@@ -13,10 +13,13 @@ async function multipleTx(
   let tripKey = 0
   console.log('creating Mock Trip...')
   try {
-    await instance.methods.createMockTrip().send({
+    const receipt = await instance.methods.createMockTrip().send({
       from: accounts[0],
       gasPrice: GAS_PRICE,
     })
+    console.log('waiting for 12 blocks...')
+    const minedTxReceipt = await awaitTransactionConfirmed(receipt)
+    console.log(minedTxReceipt, '12 blocks confirmed')
     tripKey = (await instance.methods.getTripKey().call()) - 1
     console.log('created new trip setting trip key to', tripKey)
   } catch (err) {
@@ -76,19 +79,22 @@ async function multipleTx(
   console.log('Aggregating TAL...')
   sendBlockNumber = await web3.eth.getBlockNumber()
   txStartTime = Date.now()
-  const aggregationReceipt = await instance.methods
-    .updateTALMedian(tripKey)
-    .send({
-      from: accounts[0],
-      gasPrice: GAS_PRICE,
-    })
 
-  let aggregateElapsedTime = Date.now() - txStartTime
+  executionMetrics = await executePromises(
+    [
+      instance.methods.updateTALMedian(tripKey).send({
+        from: accounts[0],
+        gasPrice: GAS_PRICE,
+      }),
+    ],
+    txStartTime
+  )
+
   await outputResults(
-    aggregateElapsedTime,
-    aggregationReceipt.gasUsed,
+    executionMetrics.txElapsedTime,
+    executionMetrics.totalGasUsed,
     sendBlockNumber,
-    aggregationReceipt.blockNumber,
+    executionMetrics.lastBlock,
     AGGREGATIONS_OUTPUT_FILE_PATH,
     TRANSACTIONS
   )
@@ -98,12 +104,21 @@ async function executePromises(promisesArr, txStartTime) {
   let totalGasUsed = 0
   let txElapsedTime = 0
   let lastBlock = 0
+  let confirmedReceipts = []
 
   let res = await Promise.all(promisesArr)
-    .then((receipts) => {
+    .then(async (receipts) => {
+      for (var receipt of receipts) {
+        console.log('Waiting for 12 confirmations on transaction(s)...')
+        const confirmedReceipt = await awaitTransactionConfirmed(receipt)
+        console.log(confirmedReceipt)
+        confirmedReceipts.push(confirmedReceipt)
+        console.log('12 confirmations received!')
+      }
+
       txElapsedTime = Date.now() - txStartTime
-      lastBlock = receipts[receipts.length - 1].blockNumber
-      receipts.forEach((receipt) => {
+      lastBlock = confirmedReceipts[confirmedReceipts.length - 1].blockNumber
+      confirmedReceipts.forEach((receipt) => {
         totalGasUsed += receipt.gasUsed
         lastBlock =
           receipt.blockNumber > lastBlock ? receipt.blockNumber : lastBlock
@@ -119,6 +134,23 @@ async function executePromises(promisesArr, txStartTime) {
       process.exit(1)
     })
   return res
+}
+
+let confirmedBlockNumbers = []
+async function awaitTransactionConfirmed(initTxReceipt, blocksToWait = 3) {
+  if (confirmedBlockNumbers.includes(initTxReceipt.blockNumber)) {
+    return initTxReceipt
+  }
+  let txHash = initTxReceipt.transactionHash
+  let currentBlock
+  let transactionReceipt
+  do {
+    currentBlock = await web3.eth.getBlockNumber()
+    transactionReceipt = await web3.eth.getTransactionReceipt(txHash)
+  } while (currentBlock - transactionReceipt.blockNumber < blocksToWait)
+
+  confirmedBlockNumbers.push(transactionReceipt.blockNumber)
+  return transactionReceipt
 }
 
 module.exports = multipleTx
