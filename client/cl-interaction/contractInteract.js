@@ -1,7 +1,6 @@
 const web3 = require('./web3.js')
 const instance = require('./factory.js')
 const outputResults = require('./outputResults.js').outputResults
-const awaitTransactionMined = require('await-transaction-mined')
 
 async function multipleTx(
   TRANSACTIONS,
@@ -19,11 +18,7 @@ async function multipleTx(
       gasPrice: GAS_PRICE,
     })
     console.log('waiting for 12 blocks...')
-    const minedTxReceipt = await awaitTransactionMined.awaitTx(
-      web3,
-      receipt.transactionHash,
-      { ensureNotUncle: true }
-    )
+    const minedTxReceipt = await awaitTransactionConfirmed(receipt)
     console.log(minedTxReceipt, '12 blocks confirmed')
     tripKey = (await instance.methods.getTripKey().call()) - 1
     console.log('created new trip setting trip key to', tripKey)
@@ -115,14 +110,8 @@ async function executePromises(promisesArr, txStartTime) {
     .then(async (receipts) => {
       for (var receipt of receipts) {
         console.log('Waiting for 12 confirmations on transaction(s)...')
-        const confirmedReceipt = await awaitTransactionMined.awaitTx(
-          web3,
-          receipt.transactionHash,
-          {
-            ensureNotUncle: true,
-          }
-        )
-        console.log(confirmedReceipt.execTime)
+        const confirmedReceipt = await awaitTransactionConfirmed(receipt)
+        console.log(confirmedReceipt)
         confirmedReceipts.push(confirmedReceipt)
         console.log('12 confirmations received!')
       }
@@ -145,6 +134,23 @@ async function executePromises(promisesArr, txStartTime) {
       process.exit(1)
     })
   return res
+}
+
+let confirmedBlockNumbers = []
+async function awaitTransactionConfirmed(initTxReceipt, blocksToWait = 3) {
+  if (confirmedBlockNumbers.includes(initTxReceipt.blockNumber)) {
+    return initTxReceipt
+  }
+  let txHash = initTxReceipt.transactionHash
+  let currentBlock
+  let transactionReceipt
+  do {
+    currentBlock = await web3.eth.getBlockNumber()
+    transactionReceipt = await web3.eth.getTransactionReceipt(txHash)
+  } while (currentBlock - transactionReceipt.blockNumber < blocksToWait)
+
+  confirmedBlockNumbers.push(transactionReceipt.blockNumber)
+  return transactionReceipt
 }
 
 module.exports = multipleTx
