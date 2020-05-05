@@ -1,6 +1,7 @@
 const web3 = require('./web3.js')
 const instance = require('./factory.js')
 const outputResults = require('./outputResults.js').outputResults
+const awaitTransactionConfirmed = require('./awaitTransactionConfirmed.js')
 
 async function multipleTx(
   TRANSACTIONS,
@@ -134,23 +135,6 @@ async function executePromises(promisesArr, txStartTime) {
       process.exit(1)
     })
   return res
-}
-
-let confirmedBlockNumbers = []
-async function awaitTransactionConfirmed(initTxReceipt, blocksToWait = 0) {
-  if (confirmedBlockNumbers.includes(initTxReceipt.blockNumber)) {
-    return initTxReceipt
-  }
-  let txHash = initTxReceipt.transactionHash
-  let currentBlock
-  let transactionReceipt
-  do {
-    currentBlock = await web3.eth.getBlockNumber()
-    transactionReceipt = await web3.eth.getTransactionReceipt(txHash)
-  } while (currentBlock - transactionReceipt.blockNumber < blocksToWait)
-
-  confirmedBlockNumbers.push(transactionReceipt.blockNumber)
-  return transactionReceipt
 }
 
 module.exports = multipleTx

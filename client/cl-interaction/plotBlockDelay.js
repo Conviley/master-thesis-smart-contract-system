@@ -57,7 +57,7 @@ function plotBlockDelay(OUTPUT_FILE_PATH, titleText) {
 }
 
 if (require.main === module) {
-  plotTimeElapsed(process.argv[2], process.argv[3])
+  plotBlockDelay(process.argv[2], process.argv[3])
 } else {
   module.exports = plotBlockDelay
 }
