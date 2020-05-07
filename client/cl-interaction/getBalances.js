@@ -1,4 +1,4 @@
-const web3 = require('./web3.js')
+const web3 = require('./web3.js')[0]
 
 const getBalances = async function getBalances() {
   console.log('Fetching balances...')

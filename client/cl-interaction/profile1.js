@@ -1,3 +1,4 @@
+const web3Array = require('./web3.js')
 const multipleTx = require('./contractInteract.js')
 const mergeJson = require('./mergeJson.js')
 const plotBlockDelay = require('./plotBlockDelay.js')
@@ -18,9 +19,11 @@ const AGGREGATIONS_OUTPUT_FILE_PATH = './p1Aggregations.json'
 const OUTPUT_MERGED_FILE_PATH = './p1Merged.json'
 
 async function test() {
+  const accounts = await web3Array[0].eth.getAccounts()
   for (var txCount of TX_COUNT) {
     try {
       await multipleTx(
+        accounts,
         txCount,
         GAS_PRICE,
         BOOKINGS_OUTPUT_FILE_PATH,
