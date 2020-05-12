@@ -17,11 +17,17 @@ async function multipleTx(
     const receipt = await instance.methods.createMockTrip().send({
       from: accounts[0],
       gasPrice: GAS_PRICE,
+      gas: 300000,
     })
-    console.log('waiting for 12 blocks...')
-    const minedTxReceipt = await awaitTransactionConfirmed(receipt)
-    console.log(minedTxReceipt, '12 blocks confirmed')
-    tripKey = (await instance.methods.getTripKey().call()) - 1
+    console.log('waiting for 4 blocks...')
+    const minedTxReceipt = await awaitTransactionConfirmed(receipt, 4)
+    console.log(minedTxReceipt.transactionHash, '4 blocks confirmed')
+    tripKey =
+      (await instance.methods.getTripKey().call({
+        from: accounts[0],
+        gasPrice: GAS_PRICE,
+        gas: 30000,
+      })) - 1
     console.log('created new trip setting trip key to', tripKey)
   } catch (err) {
     console.log('Failed to create new mock trip!', err)
@@ -36,6 +42,7 @@ async function multipleTx(
     promise = instance.methods.bookTrip(tripKey).send({
       from: accounts[i],
       gasPrice: GAS_PRICE,
+      gas: 150000,
       value: 1,
     })
 
@@ -63,6 +70,7 @@ async function multipleTx(
       .send({
         from: accounts[i],
         gasPrice: GAS_PRICE,
+        gas: 150000,
       })
 
     submissionPromiseArr.push(promise)
@@ -86,6 +94,7 @@ async function multipleTx(
       instance.methods.updateTALMedian(tripKey).send({
         from: accounts[0],
         gasPrice: GAS_PRICE,
+        gas: 1000000,
       }),
     ],
     txStartTime
@@ -109,14 +118,12 @@ async function executePromises(promisesArr, txStartTime) {
 
   let res = await Promise.all(promisesArr)
     .then(async (receipts) => {
+      console.log('Waiting for 12 confirmations on transaction(s)...')
       for (var receipt of receipts) {
-        console.log('Waiting for 12 confirmations on transaction(s)...')
         const confirmedReceipt = await awaitTransactionConfirmed(receipt)
-        console.log(confirmedReceipt)
         confirmedReceipts.push(confirmedReceipt)
-        console.log('12 confirmations received!')
       }
-
+      console.log('12 confirmations received!')
       txElapsedTime = Date.now() - txStartTime
       lastBlock = confirmedReceipts[confirmedReceipts.length - 1].blockNumber
       confirmedReceipts.forEach((receipt) => {

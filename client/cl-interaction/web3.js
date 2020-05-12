@@ -8,7 +8,16 @@ const mnemonic = fs
   .readFileSync('../../.secret')
   .toString()
   .trim()
-const walletprovider = new HDWalletProvider(mnemonic, infura.endpoint, 0, 100)
+
+const webSocketProvider = new Web3.providers.WebsocketProvider(
+  'ws://localhost:8546' //'ws://172.17.0.2:8546'
+)
+
+/* const webSocketProvider = new Web3.providers.HttpProvider(
+  'http://localhost:8545' //'ws://172.17.0.2:8546'
+) */
+
+const walletprovider = new HDWalletProvider(mnemonic, webSocketProvider, 0, 310)
 
 const web3 = new Web3(walletprovider)
 

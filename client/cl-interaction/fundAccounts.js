@@ -1,11 +1,11 @@
 const web3 = require('./web3.js')
 const getBalances = require('./getBalances.js')
 
-async function fundAccounts(accountsAmount, etherAmount) {
+async function fundAccounts(first, last, etherAmount) {
   let accounts = await web3.eth.getAccounts()
   const amountToSend = web3.utils.toWei(etherAmount)
   const transactions = []
-  for (var i = 0; i < accountsAmount; i++) {
+  for (var i = first; i < last; i++) {
     transactions.push(
       web3.eth.sendTransaction({
         from: accounts[0],
@@ -15,20 +15,24 @@ async function fundAccounts(accountsAmount, etherAmount) {
     )
   }
   console.log(
-    'Funding the first',
-    accountsAmount,
-    'accounts with',
+    'Funding accounts',
+    first,
+    'to',
+    last,
+    'with',
     etherAmount,
     'ether...'
   )
   await Promise.all(transactions)
     .then((receipts) => {
       console.log(
-        'Success!',
-        accountsAmount,
-        'accounts funded with',
+        'Success! Accounts',
+        first,
+        'to',
+        last,
+        'funded with',
         etherAmount,
-        'ether'
+        ' ether'
       )
       getBalances()
     })
@@ -38,4 +42,10 @@ async function fundAccounts(accountsAmount, etherAmount) {
     })
 }
 
-fundAccounts(20, '0.005')
+/* fundAccounts(1, 10, '0.1')
+fundAccounts(10, 20, '0.05')
+fundAccounts(20, 40, '0.04')
+fundAccounts(40, 100, '0.03')
+fundAccounts(100, 305, '0.02') */
+
+fundAccounts(20, 42, '0.02')

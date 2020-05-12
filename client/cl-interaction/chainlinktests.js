@@ -1,14 +1,13 @@
 const web3 = require('./web3.js')
 const instance = require('./factory.js')
-const subscribableInstance = require('./wssInstance.js')
 const awaitTransactionConfirmed = require('./awaitTransactionConfirmed.js')
 const outputResults = require('./outputResults.js').outputResults
 
-const GAS_PRICE = 2000000000
-const TRIP_KEY = 142
+const GAS_PRICE = 1000000000
+const TRIP_KEY = 182
 const OUTPUT_FILE_PATH = './CToutput.json'
 
-async function retreiveTAL() {
+async function retrieveTAL() {
   const accounts = await web3.eth.getAccounts()
   let gasUsed = 0
   console.log('Requesting TAL...')
@@ -19,6 +18,8 @@ async function retreiveTAL() {
     .requestTimeAtLocation(TRIP_KEY)
     .send({
       from: accounts[0],
+      gasPrice: GAS_PRICE,
+      gas: 300000,
     })
     .then((receipt) => {
       gasUsed += receipt.gasUsed
@@ -27,21 +28,18 @@ async function retreiveTAL() {
     })
 
   console.log('Subscribing to event...')
-  subscribableInstance.once('RequestTimeAtLocation', async function(
-    error,
-    event
-  ) {
-    console.log('Event Received Waiting for confrimations...')
-    const confrimedTransactionReceipt = await awaitTransactionConfirmed(event)
+  instance.once('RequestTimeAtLocation', async function(error, event) {
+    console.log('Event received. Waiting for confirmations...')
+    const confirmedTransactionReceipt = await awaitTransactionConfirmed(event)
     let timeElapsed = Date.now() - startTime
-    let blockDelay = confrimedTransactionReceipt.blockNumber - sendBlockNumber
-    gasUsed += confrimedTransactionReceipt.gasUsed
+    // let blockDelay = confrimedTransactionReceipt.blockNumber - sendBlockNumber
+    gasUsed += confirmedTransactionReceipt.gasUsed
 
     await outputResults(
       timeElapsed,
       gasUsed,
       sendBlockNumber,
-      confrimedTransactionReceipt.blockNumber,
+      confirmedTransactionReceipt.blockNumber,
       OUTPUT_FILE_PATH,
       1
     )
@@ -50,7 +48,7 @@ async function retreiveTAL() {
   })
 }
 try {
-  retreiveTAL()
+  retrieveTAL()
 } catch (err) {
   console.log(err)
 }

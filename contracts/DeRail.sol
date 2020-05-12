@@ -246,7 +246,7 @@ contract DeRail is ChainlinkClient{
     * Aggregation technique: Average
     * @param key The trip key for which to aggregate
     */
-    function updateTALAverage(uint256 key) public {
+/*     function updateTALAverage(uint256 key) public {
         Trip storage trip = trips[key];
         uint256 TALSum;
         uint256[] memory submits = submissions[key];
@@ -257,7 +257,7 @@ contract DeRail is ChainlinkClient{
         trip.timeAtLocation = averageTAL;
         
         emit TALUpdated(key, trip.timeAtLocation);
-    }
+    } */
     
     /**
     * @dev Performs aggregation and sets timeAtLocation of a Trip.
@@ -268,15 +268,7 @@ contract DeRail is ChainlinkClient{
         Trip storage trip = trips[key];
         uint256 responseLength = submissions[key].length;
         uint256 middleIndex = responseLength.div(2);
-        if (responseLength % 2 == 0) {
-          uint256 median1 = quickselect(submissions[key], middleIndex);
-          uint256 median2 = quickselect(submissions[key], middleIndex.add(1)); // quickselect is 1 indexed
-          // solium-disable-next-line zeppelin/no-arithmetic-operations
-          trip.timeAtLocation = median1.add(median2) / 2; // signed integers are not supported by SafeMath
-        } else {
-          trip.timeAtLocation = quickselect(submissions[key], middleIndex.add(1)); // quickselect is 1 indexed
-        }
-        
+        trip.timeAtLocation = quickselect(submissions[key], middleIndex.add(1)); // quickselect is 1 indexed
         emit TALUpdated(key, trip.timeAtLocation);
     }
 
