@@ -25,11 +25,11 @@ function plotBlockDelay(OUTPUT_FILE_PATH, titleText) {
   }
 
   for (var key in rawData) {
-    trace1.x.push(key)
+    trace1.x.push(key.toString() + ' ‎')
     trace1.y.push(rawData[key].minBlockDelay)
-    trace2.x.push(key)
+    trace2.x.push(key.toString() + ' ‎')
     trace2.y.push(rawData[key].avgBlockDelay)
-    trace3.x.push(key)
+    trace3.x.push(key.toString() + ' ‎')
     trace3.y.push(rawData[key].maxBlockDelay)
   }
 
