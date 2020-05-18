@@ -20,7 +20,7 @@ async function multipleTx(
       gas: 300000,
     })
     console.log('waiting for 4 blocks...')
-    const minedTxReceipt = await awaitTransactionConfirmed(receipt, 4)
+    const minedTxReceipt = await awaitTransactionConfirmed(receipt, 1)
     console.log(minedTxReceipt.transactionHash, '4 blocks confirmed')
     tripKey =
       (await instance.methods.getTripKey().call({
@@ -42,7 +42,7 @@ async function multipleTx(
     promise = instance.methods.bookTrip(tripKey).send({
       from: accounts[i],
       gasPrice: GAS_PRICE,
-      gas: 150000,
+      gas: 100000,
       value: 1,
     })
 
@@ -70,7 +70,7 @@ async function multipleTx(
       .send({
         from: accounts[i],
         gasPrice: GAS_PRICE,
-        gas: 150000,
+        gas: 100000,
       })
 
     submissionPromiseArr.push(promise)
@@ -94,7 +94,7 @@ async function multipleTx(
       instance.methods.updateTALMedian(tripKey).send({
         from: accounts[0],
         gasPrice: GAS_PRICE,
-        gas: 1000000,
+        gas: 450000,
       }),
     ],
     txStartTime

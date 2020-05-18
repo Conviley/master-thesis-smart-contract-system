@@ -48,4 +48,4 @@ fundAccounts(20, 40, '0.04')
 fundAccounts(40, 100, '0.03')
 fundAccounts(100, 305, '0.02') */
 
-fundAccounts(20, 42, '0.02')
+fundAccounts(305, 306, '2')
