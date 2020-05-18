@@ -9,7 +9,7 @@ function plotTimeElapsed(OUTPUT_FILE_PATH, titleText) {
     if (key < 310) {
       var trace = {
         y: [],
-        name: key + ' Txs',
+        name: key + ' ‎',
         type: 'box',
         marker: {
           color: 'rgb(8,81,156)',
@@ -26,7 +26,7 @@ function plotTimeElapsed(OUTPUT_FILE_PATH, titleText) {
         boxmean: true,
       }
       rawData[key]['transactions'].forEach((tx) => {
-        if (tx.elapsedTime < 600) {
+        if (tx.elapsedTime < 1200) {
           trace.y.push(tx.elapsedTime)
         }
       })
@@ -41,6 +41,7 @@ function plotTimeElapsed(OUTPUT_FILE_PATH, titleText) {
       xref: 'paper',
       x: 0.05,
     },
+    showlegend: false,
     height: 900,
     xaxis: {
       title: {

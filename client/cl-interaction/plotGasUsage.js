@@ -12,8 +12,9 @@ function plotGasUsage(OUTPUT_FILE_PATH, titleText) {
 
   for (var key in rawData) {
     trace1.x.push(key)
-
-    trace1.y.push(rawData[key].transactions[0].gasUsed)
+    trace1.y.push(
+      rawData[key].transactions[rawData[key].transactions.length - 1].gasUsed
+    )
   }
 
   var data = [trace1]

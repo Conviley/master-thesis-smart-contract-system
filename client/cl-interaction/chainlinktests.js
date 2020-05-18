@@ -15,17 +15,11 @@ async function retreiveTAL() {
   let sendBlockNumber = await web3.eth.getBlockNumber()
 
   let startTime = Date.now()
-  instance.methods
-    .requestTimeAtLocation(TRIP_KEY)
-    .send({
-      from: accounts[0],
-    })
-    .then((receipt) => {
-      gasUsed += receipt.gasUsed
-      console.log(gasUsed)
-      console.log('Request Transaction Received At Chainlink')
-    })
+  const receipt = await instance.methods.requestTimeAtLocation(TRIP_KEY).send({
+    from: accounts[0],
+  })
 
+  gasUsed += receipt.gasUsed
   console.log('Subscribing to event...')
   subscribableInstance.once('RequestTimeAtLocation', async function(
     error,

@@ -1,0 +1,40 @@
+{
+  "1": {
+    "transactions": [
+      {
+        "numberOfTransactions": 1,
+        "elapsedTime": 123.8,
+        "gasUsed": 183265,
+        "lastBlock": 7847139,
+        "blockDelay": 6
+      },
+      {
+        "numberOfTransactions": 1,
+        "elapsedTime": 65.078,
+        "gasUsed": 198265,
+        "lastBlock": 7847209,
+        "blockDelay": 6
+      },
+      {
+        "numberOfTransactions": 1,
+        "elapsedTime": 109.666,
+        "gasUsed": 198265,
+        "lastBlock": 7847598,
+        "blockDelay": 7
+      },
+      {
+        "numberOfTransactions": 1,
+        "elapsedTime": 101.024,
+        "gasUsed": 198259,
+        "lastBlock": 7847604,
+        "blockDelay": 6
+      }
+    ],
+    "minElapsedTime": 65.078,
+    "avgElapsedTime": 99.892,
+    "maxElapsedTime": 123.8,
+    "minBlockDelay": 6,
+    "avgBlockDelay": 6.25,
+    "maxBlockDelay": 7
+  }
+}
