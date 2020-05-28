@@ -19,10 +19,11 @@ function plotTimeElapsed(OUTPUT_FILE_PATH, titleText) {
             outlierwidth: 2,
           },
         },
+        boxpoints: 'all',
+        jitter: 1,
         width: 0.5,
         boxgap: 0,
         boxgroupgap: 0,
-        boxpoints: 'suspectedoutliers',
       }
       rawData[key]['transactions'].forEach((tx) => {
         if (tx.elapsedTime < 1200) {
@@ -35,17 +36,27 @@ function plotTimeElapsed(OUTPUT_FILE_PATH, titleText) {
 
   //var data = [trace1]
   const layout = {
-    title: {
+    /*     title: {
       text: titleText,
       xref: 'paper',
       x: 0.05,
+    }, */
+    margin: {
+      l: 50,
+      r: 50,
+      b: 50,
+      t: 20,
+      pad: 4,
     },
     showlegend: false,
     height: 900,
     xaxis: {
       title: {
-        text: 'Number of Transactions',
+        text: 'Submissions',
       },
+      /*       linecolor: 'black',
+      linewidth: 2,
+      mirror: true, */
     },
     yaxis: {
       title: {
@@ -54,6 +65,9 @@ function plotTimeElapsed(OUTPUT_FILE_PATH, titleText) {
       zeroline: false,
     },
     boxmode: 'group',
+    /*     linecolor: 'black',
+    linewidth: 2,
+    mirror: true, */
   }
   console.log('plotting time elapsed...', OUTPUT_FILE_PATH)
 

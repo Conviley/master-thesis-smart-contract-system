@@ -19,20 +19,33 @@ function plotGasUsage(OUTPUT_FILE_PATH, titleText) {
 
   var data = [trace1]
   const layout = {
-    title: {
+    /*     title: {
       text: titleText,
       xref: 'paper',
       x: 0.05,
+    }, */
+    margin: {
+      l: 50,
+      r: 50,
+      b: 50,
+      t: 20,
+      pad: 4,
     },
     xaxis: {
       title: {
-        text: 'Number of Transactions',
+        text: 'Submissions',
       },
+      /*       linecolor: 'black',
+      linewidth: 2,
+      mirror: true, */
     },
     yaxis: {
       title: {
-        text: 'GAS',
+        text: 'Gas',
       },
+      /*       linecolor: 'black',
+      linewidth: 2,
+      mirror: true, */
     },
   }
 

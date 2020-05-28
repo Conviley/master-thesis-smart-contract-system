@@ -42,7 +42,7 @@ function plotBlockDelay(OUTPUT_FILE_PATH, titleText) {
     },
     xaxis: {
       title: {
-        text: 'Number of Transactions',
+        text: 'Number of Submissions',
       },
     },
     yaxis: {

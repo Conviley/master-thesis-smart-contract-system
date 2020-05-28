@@ -19,10 +19,11 @@ function plotBlockDelayBox(OUTPUT_FILE_PATH, titleText) {
             outlierwidth: 2,
           },
         },
+        boxpoints: 'all',
+        jitter: 1,
         width: 0.5,
         boxgap: 0,
         boxgroupgap: 0,
-        boxpoints: 'suspectedoutliers',
       }
       rawData[key]['transactions'].forEach((tx) => {
         trace.y.push(tx.blockDelay)
@@ -33,23 +34,36 @@ function plotBlockDelayBox(OUTPUT_FILE_PATH, titleText) {
 
   //var data = [trace1]
   const layout = {
-    title: {
+    /*     title: {
       text: titleText,
       xref: 'paper',
       x: 0.05,
+    }, */
+    margin: {
+      l: 50,
+      r: 50,
+      b: 50,
+      t: 20,
+      pad: 4,
     },
     showlegend: false,
     height: 900,
     xaxis: {
       title: {
-        text: 'Number of Transactions',
+        text: 'Submissions',
       },
+      /*       linecolor: 'black',
+      linewidth: 2,
+      mirror: true, */
     },
     yaxis: {
       title: {
         text: 'Blocks',
       },
       zeroline: false,
+      /*       linecolor: 'black',
+      linewidth: 2,
+      mirror: true, */
     },
     boxmode: 'group',
   }
