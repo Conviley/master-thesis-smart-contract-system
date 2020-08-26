@@ -10,9 +10,8 @@ const plotGasUsage = require('./plotGasUsage.js')
  * Start at 10 transactions and increment by 10 until 100 transactions
  */
 
-const GAS_PRICE = 2000000000
-//const TX_COUNT = [1, 5, 10, 20, 50, 100, 200, 300]
-const TX_COUNT = [1, 2]
+const GAS_PRICE = 1000000000
+const TX_COUNT = [1, 5, 10, 20, 50, 100, 200, 300]
 const BOOKINGS_OUTPUT_FILE_PATH = './p1Booking.json'
 const SUBMISSIONS_OUTPUT_FILE_PATH = './p1Submissions.json'
 const AGGREGATIONS_OUTPUT_FILE_PATH = './p1Aggregations.json'

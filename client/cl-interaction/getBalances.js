@@ -3,6 +3,7 @@ const web3 = require('./web3.js')[0]
 const getBalances = async function getBalances() {
   console.log('Fetching balances...')
   let accounts = await web3.eth.getAccounts()
+  console.log('accounts: ', accounts)
   transactions = []
   accounts.forEach((acc) => {
     transactions.push(web3.eth.getBalance(acc))
