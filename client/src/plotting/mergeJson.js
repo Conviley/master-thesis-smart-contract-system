@@ -1,5 +1,5 @@
 const fs = require('fs-extra')
-const updateEntryValues = require('./outputResults.js').updateEntryValues
+const updateEntryValues = require('../outputResults.js').updateEntryValues
 
 async function mergeJson(inputPath1, inputPath2, outputFilePath) {
   var j1 = await fs.readJson(inputPath1)
