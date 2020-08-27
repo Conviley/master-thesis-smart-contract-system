@@ -32,6 +32,6 @@ Once every prerequisite is setup and ready you may proceed to run passenger and 
 ## Passenger tests
 To run passenger tests specify desired parameters in `passengerTest.js` and run it with node. 
 ## Chainlink tests
-Before running the chainlink test make sure that your chainlink node is online.  
-In `chainlinkTest.js` you may specify desired parameters. Make sure that the trip information is up to date and that a trip with that data exists, since trafikverket flushes out old data quite regularly. To start the chainlink test run `chainlinkTest.js` with node
+Before running the Chainlink test make sure that your cCainlink node is running.  
+In `chainlinkTest.js` you may specify desired parameters. Make sure that the trip information is up to date and that a trip with that data exists, since trafikverket flushes out old data quite regularly. To start the Chainlink test run `chainlinkTest.js` with node
 
