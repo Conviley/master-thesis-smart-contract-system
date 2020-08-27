@@ -1,53 +1,34 @@
-# Prerequisites
-This project requires you to have truffle and node installed! It is also suggested that you use Metamask!  
-To install node visit: https://nodejs.org/en/download/.  
-After node has been installed run `npm install -g truffle` to install truffle globally.  
-To install metamask visit https://metamask.io/download.html
+# Availability of Smart Contracts That Rely on External Data
+This repository contains the smart contract system built for the master's thesis conducted by Tjelvar Guo and Daniel Herzegh at Linköping University 2020.  
+The accompanying Master's thesis report is published and can be read at[TODO: ADD LINK]()  
+The remaining part of this readme will detail how to conduct the research experiments performed by the authors.
 
-You need ether and LINK in your `ropsten` wallet!  
+# Pre-requisites
+1. Install [node](https://nodejs.org/en/download/)
+2. Install Truffle: `npm install -g truffle`
+3. Install dependencies: `npm install` and then `cd client ; npm install`
+4. In the root of the repo create a file called `.secret` and paste your wallet seed phrase inside
+5. Setup ethereum client node for the `ropsten network` running on `loclhost:8546`. To replicate the work of the authors setup a [Geth node](https://geth.ethereum.org/downloads/).
+6. Deploy Contracts: `truffle migrate --network ropsten` make sure to note the deployed address of DeRail!
+7. In the root of the repo create a file called `address.json` and paste the contract address into it as the following
+```json
+{
+  "address": "YOUR_DEPLOYED_CONTRACT_ADDRESS"
+}
+```
+8. Setup chainlink node. Please refer to the [official chainlink documentation](https://docs.chain.link/docs/node-operator-overview)
+The authors hosted their chainlink node on google cloud with the settings found in appendix **A** of the master thesis report.
+9. TODO: External adapter step
+
+You need ETH in your `ropsten` wallet and your contract needs LINK!  
 *  Get ETH at https://faucet.ropsten.be/
 *  Get LINK at https://ropsten.chain.link/
 
 # Testing
-Since the front-end is not fully built, testing the contract can be done in one of two ways.
+Once every prerequisite is setup and ready you may proceed to run passenger and chainlink tests
+## Passenger tests
+To run passenger tests specify desired parameters in `passengerTest.js` and run it with node. 
+## Chainlink tests
+Before running the chainlink test make sure that your chainlink node is online.  
+In `chainlinkTest.js` you may specify desired parameters. Make sure that the trip information is up to date and that a trip with that data exists, since trafikverket flushes out old data quite regularly. To start the chainlink test run `chainlinkTest.js` with node
 
-### Running local tests
-By running `truffle test` in the root of the project the local tests get run.
-
-### Testing with Remix
-- Visit https://remix.ethereum.org/  
-- Copy the contents of `DeRail.sol` and `HitchensUnorderedKeySet.sol` and paste them  
-into two new files with the same name in remix.  
-- Deploy the DeRail contract using `Javascript VM` to test all non-chainlink related functionality  
-- Deploy the DeRail contract using `Injected Web3`, making sure you're on the `ropsten` network (switch network in metamask),
-to be able to test everything.  
-- Remember to fund the contract with LINK to test chainlink functionality.  
-
-
-### Testing Frontend
-1. Clone the repo
-2. `cd tqdt33` You should be on the development branch already!
-3. Run `npm install`
-4. Create Infura account at www.infura.io and set up a new project.
-5. `cd client`
-6. Run `npm install`
-7. `cd ../`
-8. Create a file called `infura.json` with a json object with key `endpoint`
-   pointing to your infura ropsten enpoint.
-    ```json
-    {
-        "endpoint": "https://ropsten.infura.io/v3/YOUR-Project-Endpoint"
-    }
-    ```
-    Make sure you add `https://`
-9. Create a file called `.secret` and paste your wallet mneumonic inside it.  
-   In metamask you can find your wallet mneumonic under Settings --> Security & Privacy --> Reveal seed words
-10. Run `truffle migrate --network ropsten` 
-11. Create a file called `address.json` with a json object with the key `address` containing the DeRail contract address.
-    ```json
-    {
-        "address": "Contract address from the latest migration"
-    }
-    ```
-12. `cd client`
-13. finally run `npm run dev` to spin up the server and visit http://localhost:3000/
