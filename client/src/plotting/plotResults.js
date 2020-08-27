@@ -1,11 +1,7 @@
-const multipleTx = require('./contractInteract.js')
-const mergeJson = require('./mergeJson.js')
-const plotBlockDelay = require('./plotBlockDelay.js')
-const plotBlockDelayBox = require('./plotblockDelayBox.js')
-const plotTimeElapsed = require('./plotTimeElapsed.js')
+const plotBlockDelayBox = require('./plotblockDelay.js')
+const plotNetworkLatency = require('./plotNetworkLatency.js')
 const plotGasUsage = require('./plotGasUsage.js')
 
-const BOOKINGS_OUTPUT_FILE_PATH = './p1Booking.json'
 const SUBMISSIONS_OUTPUT_FILE_PATH = './p1Submissions.json'
 const AGGREGATIONS_OUTPUT_FILE_PATH = './p1Aggregations.json'
 const OUTPUT_MERGED_FILE_PATH = './p1Merged.json'
@@ -14,7 +10,7 @@ const TRAFIKVERKET_OUTPUT_FILE_PATH = './CToutput.json'
 function plotStuff() {
   plotGasUsage(SUBMISSIONS_OUTPUT_FILE_PATH, 'Gas Usage for Submissions')
   plotBlockDelayBox(SUBMISSIONS_OUTPUT_FILE_PATH, 'Block Delay for Submissions')
-  plotTimeElapsed(
+  plotNetworkLatency(
     SUBMISSIONS_OUTPUT_FILE_PATH,
     'Network latency for Submissions'
   )
@@ -24,22 +20,26 @@ function plotStuff() {
     AGGREGATIONS_OUTPUT_FILE_PATH,
     'Block Delay for Aggregations'
   )
-  plotTimeElapsed(
+  plotNetworkLatency(
     AGGREGATIONS_OUTPUT_FILE_PATH,
     'Network Latency for Aggregations'
   )
 
   plotGasUsage(OUTPUT_MERGED_FILE_PATH, 'GAS Usage - Total')
   plotBlockDelayBox(OUTPUT_MERGED_FILE_PATH, 'Block Delay - Total')
-  plotTimeElapsed(OUTPUT_MERGED_FILE_PATH, 'Network Latency - Total')
+  plotNetworkLatency(OUTPUT_MERGED_FILE_PATH, 'Network Latency - Total')
 
-  /*   plotGasUsage(TRAFIKVERKET_OUTPUT_FILE_PATH, 'GAS Usage - Total')
-  plotBlockDelayBox(TRAFIKVERKET_OUTPUT_FILE_PATH, 'Block Delay - Total')
-  plotTimeElapsed(TRAFIKVERKET_OUTPUT_FILE_PATH, 'Network Latency - Total') */
+  plotGasUsage(TRAFIKVERKET_OUTPUT_FILE_PATH, 'Chainlink GAS Usage - Total')
+  plotBlockDelayBox(
+    TRAFIKVERKET_OUTPUT_FILE_PATH,
+    'Chainlink Block Delay - Total'
+  )
+  plotNetworkLatency(
+    TRAFIKVERKET_OUTPUT_FILE_PATH,
+    'Chainlink Network Latency - Total'
+  )
 
   console.log('Plot finished!')
-  //await new Promise((r) => setTimeout(r, 3000))
-  //process.exit(0)
 }
 
 plotStuff()

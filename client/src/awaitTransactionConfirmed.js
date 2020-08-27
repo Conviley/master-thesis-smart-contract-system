@@ -1,4 +1,4 @@
-const web3 = require('./web3.js')
+const web3 = require('./web3/web3.js')
 
 let confirmedBlockNumbers = []
 async function awaitTransactionConfirmed(initTxReceipt, blocksToWait = 11) {

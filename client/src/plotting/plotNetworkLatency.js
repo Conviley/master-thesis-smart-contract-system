@@ -1,6 +1,7 @@
 const plotlib = require('nodeplotlib')
 
-function plotBlockDelayBox(OUTPUT_FILE_PATH, titleText) {
+function plotNetworkLatency(OUTPUT_FILE_PATH, titleText) {
+  OUTPUT_FILE_PATH = '.' + OUTPUT_FILE_PATH
   const rawData = require(OUTPUT_FILE_PATH)
 
   var data = []
@@ -26,7 +27,9 @@ function plotBlockDelayBox(OUTPUT_FILE_PATH, titleText) {
         boxgroupgap: 0,
       }
       rawData[key]['transactions'].forEach((tx) => {
-        trace.y.push(tx.blockDelay)
+        if (tx.elapsedTime < 1200) {
+          trace.y.push(tx.elapsedTime)
+        }
       })
       data.push(trace)
     }
@@ -58,21 +61,28 @@ function plotBlockDelayBox(OUTPUT_FILE_PATH, titleText) {
     },
     yaxis: {
       title: {
-        text: 'Blocks',
+        text: 'Seconds[s]',
       },
       zeroline: false,
-      /*       linecolor: 'black',
-      linewidth: 2,
-      mirror: true, */
     },
     boxmode: 'group',
+    /*     linecolor: 'black',
+    linewidth: 2,
+    mirror: true, */
   }
+  console.log('plotting time elapsed...', OUTPUT_FILE_PATH)
 
   plotlib.plot(data, layout)
+  /*plotlib.downloadImage('container', {
+    format: 'png',
+    width: 800,
+    height: 600,
+    filename: 'newplot',
+  })*/
 }
 
 if (require.main === module) {
-  plotBlockDelayBox(process.argv[2], process.argv[3])
+  plotNetworkLatency(process.argv[2], process.argv[3])
 } else {
-  module.exports = plotBlockDelayBox
+  module.exports = plotNetworkLatency
 }

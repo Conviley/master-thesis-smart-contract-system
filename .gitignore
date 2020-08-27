@@ -6,5 +6,5 @@ package-lock.json
 address.json
 infura.json
 build
-client/cl-interaction/*.json
+client/src/results/*.json
 testingZone.js

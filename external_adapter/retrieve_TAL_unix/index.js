@@ -3,7 +3,7 @@ var utf8 = require('utf8')
 
 exports.retrieveTALData = (req, res) => {
   const url = req.body.data.url || ''
-  const key = '4ac7c190db5942c8bf99fa49078c5376' // TODO: Possibly change this so that the key is stored and sent from the node operator
+  const key = ''
   const trainId = req.body.data.advertisedTrainIdent || ''
   const locationSig = req.body.data.locationSignature || ''
   const advertisedTimeAtLocation = req.body.data.advertisedTimeAtLocation || ''

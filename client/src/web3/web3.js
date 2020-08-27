@@ -1,4 +1,4 @@
-const HDWalletProvider = require('../../node_modules/@truffle/hdwallet-provider')
+const HDWalletProvider = require('../../../node_modules/@truffle/hdwallet-provider')
 const Web3 = require('web3')
 const fs = require('fs-extra')
 
