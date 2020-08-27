@@ -1,5 +1,5 @@
-const web3 = require('./web3.js')[0]
-const instance = require('./factory.js')[0]
+const web3 = require('./web3.js')
+const instance = require('./factory.js')
 
 async function createTrip() {
   let accounts = await web3.eth.getAccounts()

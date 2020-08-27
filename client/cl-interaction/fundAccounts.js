@@ -1,4 +1,4 @@
-const web3 = require('./web3.js')[0]
+const web3 = require('./web3.js')
 const getBalances = require('./getBalances.js')
 
 async function fundAccounts(first, last, etherAmount) {

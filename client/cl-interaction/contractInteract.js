@@ -1,5 +1,5 @@
-const web3Array = require('./web3.js')
-const instances = require('./factory.js')
+const web3 = require('./web3.js')
+const instance = require('./factory.js')
 const outputResults = require('./outputResults.js').outputResults
 const awaitTransactionConfirmed = require('./awaitTransactionConfirmed.js')
 
@@ -11,20 +11,21 @@ async function multipleTx(
   SUBMISSIONS_OUTPUT_FILE_PATH,
   AGGREGATIONS_OUTPUT_FILE_PATH
 ) {
+  const BASE_ACCOUNT = accounts[0]
   let tripKey = 0
   console.log('creating Mock Trip...')
   try {
-    const receipt = await instances[0].methods.createMockTrip().send({
-      from: accounts[0],
+    const receipt = await instance.methods.createMockTrip().send({
+      from: BASE_ACCOUNT,
       gasPrice: GAS_PRICE,
       gas: 300000,
     })
-    console.log('waiting for 4 blocks...')
+    console.log('waiting for 2 blocks...')
     const minedTxReceipt = await awaitTransactionConfirmed(receipt, 1)
-    console.log(minedTxReceipt.transactionHash, '4 blocks confirmed')
+    console.log(minedTxReceipt.transactionHash, '2 blocks confirmed')
     tripKey =
       (await instance.methods.getTripKey().call({
-        from: accounts[0],
+        from: BASE_ACCOUNT,
         gasPrice: GAS_PRICE,
         gas: 30000,
       })) - 1
@@ -34,12 +35,12 @@ async function multipleTx(
     process.exit(1)
   }
 
-  var sendBlockNumber = await web3Array[0].eth.getBlockNumber()
+  var sendBlockNumber = await web3.eth.getBlockNumber()
   let bookingPromiseArr = []
   let txStartTime = Date.now()
   for (let i = 0; i < TRANSACTIONS; i++) {
     let promise = ''
-    promise = instances[i % 3].methods.bookTrip(tripKey).send({
+    promise = instance.methods.bookTrip(tripKey).send({
       from: accounts[i],
       gasPrice: GAS_PRICE,
       gas: 100000,
@@ -61,11 +62,11 @@ async function multipleTx(
   )
 
   console.log('issuing addSubmission transactions...')
-  sendBlockNumber = await web3Array[0].eth.getBlockNumber()
+  sendBlockNumber = await web3.eth.getBlockNumber()
   let submissionPromiseArr = []
   txStartTime = Date.now()
   for (let i = 0; i < TRANSACTIONS; i++) {
-    let promise = instances[i % 3].methods
+    let promise = instance.methods
       .addSubmission(tripKey, Math.round(Date.now() / 1000))
       .send({
         from: accounts[i],
@@ -86,7 +87,7 @@ async function multipleTx(
   )
 
   console.log('Aggregating TAL...')
-  sendBlockNumber = await web3Array[0].eth.getBlockNumber()
+  sendBlockNumber = await web3.eth.getBlockNumber()
   txStartTime = Date.now()
 
   executionMetrics = await executePromises(
