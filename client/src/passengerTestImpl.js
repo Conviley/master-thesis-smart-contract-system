@@ -1,5 +1,5 @@
-const web3 = require('./web3.js')
-const instance = require('./factory.js')
+const web3 = require('./web3/web3.js')
+const instance = require('./web3/factory.js')
 const outputResults = require('./outputResults.js').outputResults
 const awaitTransactionConfirmed = require('./awaitTransactionConfirmed.js')
 

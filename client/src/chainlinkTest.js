@@ -1,11 +1,11 @@
-const web3 = require('./web3.js')
-const instance = require('./factory.js')
-const subscribableInstance = require('./wssInstance.js')
+const web3 = require('./web3/web3.js')
+const instance = require('./web3/factory.js')
+const subscribableInstance = require('./web3/wssInstance.js')
 const awaitTransactionConfirmed = require('./awaitTransactionConfirmed.js')
 const outputResults = require('./outputResults.js').outputResults
 
 const GAS_PRICE = 1000000000
-const OUTPUT_FILE_PATH = './CToutput.json'
+const OUTPUT_FILE_PATH = './results/CToutput.json'
 const FROM_LOC = 'Lp'
 const TO_LOC = 'Nr'
 const ADVERTISED_TAL = '2020-08-26T17:51:00.000+02:00'
@@ -67,7 +67,7 @@ async function retrieveTAL() {
 
   console.log('Subscribing to event...')
 
-  await subscribableInstance.once('RequestTimeAtLocation', async function(
+  await subscribableInstance.once('RequestTimeAtLocation', async function (
     error,
     event
   ) {

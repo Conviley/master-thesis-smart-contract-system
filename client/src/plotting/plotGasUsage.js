@@ -1,6 +1,7 @@
 const plotlib = require('nodeplotlib')
 
 function plotGasUsage(OUTPUT_FILE_PATH, titleText) {
+  OUTPUT_FILE_PATH = '.' + OUTPUT_FILE_PATH
   const rawData = require(OUTPUT_FILE_PATH)
 
   var trace1 = {
