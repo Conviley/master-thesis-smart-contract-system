@@ -4,7 +4,7 @@ const getBalances = require('./getBalances.js')
 async function fundMainAccount(accountsAmount) {
   let accounts = await web3.eth.getAccounts()
   let amountToSend = 0
-  let gasCosts = (await web3.eth.getGasPrice()) * 22000
+  let gasCosts = 1000000000 * 21000
 
   const transactions = []
   for (var i = 1; i < accountsAmount + 1; i++) {
@@ -21,6 +21,8 @@ async function fundMainAccount(accountsAmount) {
         from: accounts[i],
         to: accounts[0],
         value: amountToSend,
+        gasPrice: 1000000000,
+        gas: 21000,
       })
     )
   }
@@ -36,4 +38,4 @@ async function fundMainAccount(accountsAmount) {
     })
 }
 
-fundMainAccount(99)
+fundMainAccount(305)

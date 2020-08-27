@@ -1,7 +1,7 @@
 const web3 = require('./web3.js')
 
 let confirmedBlockNumbers = []
-async function awaitTransactionConfirmed(initTxReceipt, blocksToWait = 0) {
+async function awaitTransactionConfirmed(initTxReceipt, blocksToWait = 11) {
   if (confirmedBlockNumbers.includes(initTxReceipt.blockNumber)) {
     return initTxReceipt
   }

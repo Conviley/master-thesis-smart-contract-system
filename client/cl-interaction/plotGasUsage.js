@@ -12,26 +12,40 @@ function plotGasUsage(OUTPUT_FILE_PATH, titleText) {
 
   for (var key in rawData) {
     trace1.x.push(key)
-
-    trace1.y.push(rawData[key].transactions[0].gasUsed)
+    trace1.y.push(
+      rawData[key].transactions[rawData[key].transactions.length - 1].gasUsed
+    )
   }
 
   var data = [trace1]
   const layout = {
-    title: {
+    /*     title: {
       text: titleText,
       xref: 'paper',
       x: 0.05,
+    }, */
+    margin: {
+      l: 50,
+      r: 50,
+      b: 50,
+      t: 20,
+      pad: 4,
     },
     xaxis: {
       title: {
-        text: 'Number of Transactions',
+        text: 'Submissions',
       },
+      /*       linecolor: 'black',
+      linewidth: 2,
+      mirror: true, */
     },
     yaxis: {
       title: {
-        text: 'GAS',
+        text: 'Gas',
       },
+      /*       linecolor: 'black',
+      linewidth: 2,
+      mirror: true, */
     },
   }
 

@@ -1,3 +1,4 @@
+const web3 = require('./web3.js')
 const multipleTx = require('./contractInteract.js')
 const mergeJson = require('./mergeJson.js')
 const plotBlockDelay = require('./plotBlockDelay.js')
@@ -9,18 +10,19 @@ const plotGasUsage = require('./plotGasUsage.js')
  * Start at 10 transactions and increment by 10 until 100 transactions
  */
 
-const GAS_PRICE = 2000000000
-//const TX_COUNT = [1, 5, 10, 20, 50, 100, 200, 300]
-const TX_COUNT = [1, 2]
+const GAS_PRICE = 1000000000
+const TX_COUNT = [1, 5, 10]
 const BOOKINGS_OUTPUT_FILE_PATH = './p1Booking.json'
 const SUBMISSIONS_OUTPUT_FILE_PATH = './p1Submissions.json'
 const AGGREGATIONS_OUTPUT_FILE_PATH = './p1Aggregations.json'
 const OUTPUT_MERGED_FILE_PATH = './p1Merged.json'
 
 async function test() {
+  const accounts = await web3.eth.getAccounts()
   for (var txCount of TX_COUNT) {
     try {
       await multipleTx(
+        accounts,
         txCount,
         GAS_PRICE,
         BOOKINGS_OUTPUT_FILE_PATH,
