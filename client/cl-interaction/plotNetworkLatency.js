@@ -1,6 +1,6 @@
 const plotlib = require('nodeplotlib')
 
-function plotTimeElapsed(OUTPUT_FILE_PATH, titleText) {
+function plotNetworkLatency(OUTPUT_FILE_PATH, titleText) {
   const rawData = require(OUTPUT_FILE_PATH)
 
   var data = []
@@ -81,7 +81,7 @@ function plotTimeElapsed(OUTPUT_FILE_PATH, titleText) {
 }
 
 if (require.main === module) {
-  plotTimeElapsed(process.argv[2], process.argv[3])
+  plotNetworkLatency(process.argv[2], process.argv[3])
 } else {
-  module.exports = plotTimeElapsed
+  module.exports = plotNetworkLatency
 }

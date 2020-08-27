@@ -1,63 +1,78 @@
 const plotlib = require('nodeplotlib')
 
-function plotBlockDelay(OUTPUT_FILE_PATH, titleText) {
+function plotBlockDelayBox(OUTPUT_FILE_PATH, titleText) {
   const rawData = require(OUTPUT_FILE_PATH)
 
-  var trace1 = {
-    x: [],
-    y: [],
-    name: 'Min Block Delay',
-    type: 'bar',
-  }
-
-  var trace2 = {
-    x: [],
-    y: [],
-    name: 'Avg Block Delay',
-    type: 'bar',
-  }
-
-  var trace3 = {
-    x: [],
-    y: [],
-    name: 'Max Block Delay',
-    type: 'bar',
-  }
-
+  var data = []
+  var i = 0
   for (var key in rawData) {
-    trace1.x.push(key.toString() + ' ‎')
-    trace1.y.push(rawData[key].minBlockDelay)
-    trace2.x.push(key.toString() + ' ‎')
-    trace2.y.push(rawData[key].avgBlockDelay)
-    trace3.x.push(key.toString() + ' ‎')
-    trace3.y.push(rawData[key].maxBlockDelay)
+    if (key < 310) {
+      var trace = {
+        y: [],
+        name: key + ' ‎',
+        type: 'box',
+        marker: {
+          color: 'rgb(8,81,156)',
+          outliercolor: 'rgba(219, 64, 82, 0.6)',
+          line: {
+            outliercolor: 'rgba(219, 64, 82, 1.0)',
+            outlierwidth: 2,
+          },
+        },
+        boxpoints: 'all',
+        jitter: 1,
+        width: 0.5,
+        boxgap: 0,
+        boxgroupgap: 0,
+      }
+      rawData[key]['transactions'].forEach((tx) => {
+        trace.y.push(tx.blockDelay)
+      })
+      data.push(trace)
+    }
   }
 
-  var data = [trace1, trace2, trace3]
+  //var data = [trace1]
   const layout = {
-    title: {
+    /*     title: {
       text: titleText,
       xref: 'paper',
       x: 0.05,
+    }, */
+    margin: {
+      l: 50,
+      r: 50,
+      b: 50,
+      t: 20,
+      pad: 4,
     },
+    showlegend: false,
+    height: 900,
     xaxis: {
       title: {
-        text: 'Number of Submissions',
+        text: 'Submissions',
       },
+      /*       linecolor: 'black',
+      linewidth: 2,
+      mirror: true, */
     },
     yaxis: {
       title: {
         text: 'Blocks',
       },
+      zeroline: false,
+      /*       linecolor: 'black',
+      linewidth: 2,
+      mirror: true, */
     },
+    boxmode: 'group',
   }
-  console.log('plotting block delay...')
 
   plotlib.plot(data, layout)
 }
 
 if (require.main === module) {
-  plotBlockDelay(process.argv[2], process.argv[3])
+  plotBlockDelayBox(process.argv[2], process.argv[3])
 } else {
-  module.exports = plotBlockDelay
+  module.exports = plotBlockDelayBox
 }

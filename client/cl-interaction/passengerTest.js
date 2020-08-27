@@ -1,14 +1,9 @@
 const web3 = require('./web3.js')
-const multipleTx = require('./contractInteract.js')
+const multipleTx = require('./passengerTestImpl.js')
 const mergeJson = require('./mergeJson.js')
 const plotBlockDelay = require('./plotBlockDelay.js')
-const plotTimeElapsed = require('./plotTimeElapsed.js')
+const plotNetworkLatency = require('./plotNetworkLatency.js')
 const plotGasUsage = require('./plotGasUsage.js')
-/**
- * TODO UPDATE DESCRIPTION ACCORDING TO TESTING METHODOLOGY
- * This profile tests submissions and aggregation.
- * Start at 10 transactions and increment by 10 until 100 transactions
- */
 
 const GAS_PRICE = 1000000000
 const TX_COUNT = [1, 5, 10]
@@ -43,7 +38,7 @@ test().then(async (_) => {
   )
 
   plotBlockDelay(SUBMISSIONS_OUTPUT_FILE_PATH, 'Block Delay - addSubmission()')
-  plotTimeElapsed(
+  plotNetworkLatency(
     SUBMISSIONS_OUTPUT_FILE_PATH,
     'Time Elapsed - addSubmission()'
   )
@@ -53,14 +48,14 @@ test().then(async (_) => {
     AGGREGATIONS_OUTPUT_FILE_PATH,
     'Block Delay - updateTALMedian()'
   )
-  plotTimeElapsed(
+  plotNetworkLatency(
     AGGREGATIONS_OUTPUT_FILE_PATH,
     'Time Elapsed - updateTALMedian()'
   )
   plotGasUsage(AGGREGATIONS_OUTPUT_FILE_PATH, 'GAS Usage - updateTALMedian()')
 
   plotBlockDelay(OUTPUT_MERGED_FILE_PATH, 'Block Delay - Merged')
-  plotTimeElapsed(OUTPUT_MERGED_FILE_PATH, 'Time Elapsed - Merged')
+  plotNetworkLatency(OUTPUT_MERGED_FILE_PATH, 'Time Elapsed - Merged')
   plotGasUsage(OUTPUT_MERGED_FILE_PATH, 'GAS Usage - Merged')
 
   console.log('Test Finished!')
