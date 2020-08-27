@@ -1,2 +1,10 @@
 node_modules
 package-lock.json
+.next
+.secret
+.address
+address.json
+infura.json
+build
+client/src/results/*.json
+testingZone.js
