@@ -16,9 +16,12 @@ The remaining part of this readme will detail how to conduct the research experi
   "address": "YOUR_DEPLOYED_CONTRACT_ADDRESS"
 }
 ```
-8. Setup chainlink node. Please refer to the [official chainlink documentation](https://docs.chain.link/docs/node-operator-overview)
-The authors hosted their chainlink node on google cloud with the settings found in appendix **A** of the master thesis report.
-9. TODO: External adapter step
+8. Setup Chainlink node. Please refer to the [official chainlink documentation](https://docs.chain.link/docs/node-operator-overview)
+The authors hosted their Chainlink node on Google cloud with the settings found in appendix **A** of the master thesis report.
+9. Create a developer account at https://api.trafikinfo.trafikverket.se/ and generate an API-key.
+10. Deploy the external adapter. Copy the code in the folder 'external adapter'. Deploy it locally or as a serverless function on some VPS. Either set the 'key'-variable to your API-key or include the API-key as an environment variable. 
+11. Connect the Chainlink node to the external adapter with a so called 'bridge'. Follow the instructions here: https://docs.chain.link/docs/node-operators#config.
+
 
 You need ETH in your `ropsten` wallet and your contract needs LINK!  
 *  Get ETH at https://faucet.ropsten.be/
