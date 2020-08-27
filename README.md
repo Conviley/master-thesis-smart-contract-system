@@ -3,7 +3,7 @@ This repository contains the smart contract system built for the master's thesis
 The accompanying Master's thesis report is published and can be read at[TODO: ADD LINK]()  
 The remaining part of this readme will detail how to conduct the research experiments performed by the authors.
 
-# Pre-requisites
+# Prerequisites
 1. Install [node](https://nodejs.org/en/download/)
 2. Install Truffle: `npm install -g truffle`
 3. Install dependencies: `npm install` and then `cd client ; npm install`
