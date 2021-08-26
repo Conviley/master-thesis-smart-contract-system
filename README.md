@@ -1,6 +1,6 @@
 # Availability of Smart Contracts That Rely on External Data
 This repository contains the smart contract system built for the master's thesis conducted by Tjelvar Guo and Daniel Herzegh at Linköping University 2020.  
-The accompanying Master's thesis report is published and can be read at[TODO: ADD LINK]()  
+The accompanying Master's thesis report is published and can be read [here](http://liu.diva-portal.org/smash/record.jsf?dswid=7955&pid=diva2%3A1466902&c=1&searchType=UNDERGRADUATE&language=en&query=&af=%5B%5D&aq=%5B%5B%7B%22freeText%22%3A%22tjelvar%22%7D%5D%5D&aq2=%5B%5B%5D%5D&aqe=%5B%5D&noOfRows=50&sortOrder=author_sort_asc&sortOrder2=title_sort_asc&onlyFullText=false&sf=all).  
 The remaining part of this readme will detail how to conduct the research experiments performed by the authors.
 
 # Prerequisites
